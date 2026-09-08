@@ -1,0 +1,640 @@
+// Prisma schema file
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  STAFF
+  CUSTOMER
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          UserRole  @default(CUSTOMER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+  staff         Staff?
+  customer      Customer?
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+enum BusinessType {
+  MEDICAL
+  DENTAL
+  SALON
+  BARBERSHOP
+  SPA
+  MASSAGE
+  FITNESS
+  PERSONAL_TRAINING
+  CONSULTATION
+  PHOTOGRAPHY
+  REPAIR
+  OTHER
+}
+
+model Business {
+  id              String       @id @default(cuid())
+  name            String
+  type            BusinessType @default(DENTAL)
+  description     String?      @db.Text
+  logo            String?
+  favicon         String?
+  address         String?
+  latitude        Float?       @default(14.5547)
+  longitude       Float?       @default(121.0244)
+  mapZoom         Int?         @default(15)
+  phone           String?
+  email           String?
+  website         String?
+  timezone        String       @default("Asia/Manila")
+  currency        String       @default("PHP")
+  currencySymbol  String       @default("₱")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  settings        BusinessSettings?
+  terminology     BusinessTerminology?
+  featureSettings FeatureSettings?
+  themeSettings   ThemeSettings?
+  openingHours    OpeningHours[]
+  staff           Staff[]
+  services        Service[]
+  appointments    Appointment[]
+  customers       Customer[]
+  testimonials    Testimonial[]
+  reviews         Review[]
+  faqs            FAQ[]
+  blogPosts       BlogPost[]
+  media           Media[]
+  navigationItems NavigationItem[]
+  websiteSections WebsiteSection[]
+  notifications   Notification[]
+  serviceCategories ServiceCategory[]
+  @@map("businesses")
+}
+
+model OpeningHours {
+  id         String   @id @default(cuid())
+  businessId String
+  dayOfWeek  Int
+  isOpen     Boolean  @default(true)
+  openTime   String   @default("09:00")
+  closeTime  String   @default("17:00")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@unique([businessId, dayOfWeek])
+  @@map("opening_hours")
+}
+
+model BusinessSettings {
+  id                         String   @id @default(cuid())
+  businessId                 String   @unique
+  minNoticeHours             Int      @default(2)
+  maxBookingDays             Int      @default(90)
+  slotIntervalMinutes        Int      @default(15)
+  defaultBufferMinutes       Int      @default(0)
+  cancellationWindowHours    Int      @default(24)
+  allowSameDayBooking        Boolean  @default(true)
+  allowCustomerCancel        Boolean  @default(true)
+  allowCustomerReschedule    Boolean  @default(true)
+  maxDailyAppointments       Int?
+  sendConfirmationEmail      Boolean  @default(true)
+  sendReminderEmail          Boolean  @default(true)
+  reminderHoursBefore        Int      @default(24)
+  adminNotificationEmail     String?
+  smtpHost                   String?
+  smtpPort                   Int?
+  smtpUser                   String?
+  smtpPassword               String?
+  smtpFromEmail              String?
+  smtpFromName               String?
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+  business                   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@map("business_settings")
+}
+
+model BusinessTerminology {
+  id                  String   @id @default(cuid())
+  businessId          String   @unique
+  staffLabel          String   @default("Staff")
+  staffSingular       String   @default("Staff Member")
+  serviceLabel        String   @default("Services")
+  serviceSingular     String   @default("Service")
+  appointmentLabel    String   @default("Appointments")
+  appointmentSingular String   @default("Appointment")
+  customerLabel       String   @default("Customers")
+  customerSingular    String   @default("Customer")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  business            Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@map("business_terminology")
+}
+
+model FeatureSettings {
+  id               String   @id @default(cuid())
+  businessId       String   @unique
+  onlineBooking    Boolean  @default(true)
+  staffProfiles    Boolean  @default(true)
+  services         Boolean  @default(true)
+  testimonials     Boolean  @default(true)
+  faq              Boolean  @default(true)
+  blog             Boolean  @default(false)
+  gallery          Boolean  @default(false)
+  contactForm      Boolean  @default(true)
+  customerAccounts Boolean  @default(false)
+  payments         Boolean  @default(false)
+  notifications    Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  business         Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@map("feature_settings")
+}
+
+enum ThemeName {
+  CLINICAL_SWISS
+  PREMIUM_SOFT
+  DARK_CLINICAL
+}
+
+model ThemeSettings {
+  id             String    @id @default(cuid())
+  businessId     String    @unique
+  theme          ThemeName @default(CLINICAL_SWISS)
+  primaryColor   String?
+  secondaryColor String?
+  accentColor    String?
+  headingFont    String?
+  bodyFont       String?
+  borderRadius   String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  business       Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@map("theme_settings")
+}
+
+model Media {
+  id           String   @id @default(cuid())
+  businessId   String
+  url          String
+  filename     String
+  originalName String
+  mimeType     String
+  size         Int
+  altText      String?
+  width        Int?
+  height       Int?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  business     Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@map("media")
+}
+
+model NavigationItem {
+  id         String   @id @default(cuid())
+  businessId String
+  label      String
+  href       String
+  order      Int      @default(0)
+  isActive   Boolean  @default(true)
+  isExternal Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@map("navigation_items")
+}
+
+enum SectionType {
+  HERO
+  TRUST_STATS
+  SERVICES
+  ABOUT
+  STAFF
+  WHY_CHOOSE_US
+  GALLERY
+  TESTIMONIALS
+  FAQ
+  BLOG
+  BOOKING_CTA
+  CONTACT
+}
+
+model WebsiteSection {
+  id         String      @id @default(cuid())
+  businessId String
+  type       SectionType
+  isEnabled  Boolean     @default(true)
+  order      Int         @default(0)
+  content    Json?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  business   Business    @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@unique([businessId, type])
+  @@map("website_sections")
+}
+
+model Staff {
+  id           String         @id @default(cuid())
+  businessId   String
+  userId       String?        @unique
+  name         String
+  photo        String?
+  images       String[]       @default([])
+  role         String?
+  specialty    String?
+  specialties  String[]       @default([])
+  bio          String?        @db.Text
+  biography    String?        @db.Text
+  credentials  String[]       @default([])
+  education    String[]       @default([])
+  experience   String?
+  languages    String[]       @default([])
+  email        String?
+  phone        String?
+  slug         String
+  isActive     Boolean        @default(true)
+  acceptingAppointments Boolean @default(true)
+  emailVerified         Boolean        @default(true)
+  emailNotifications    Boolean        @default(true)
+  inAppNotifications    Boolean        @default(true)
+  notifyNewAppointment  Boolean        @default(true)
+  notifyCancellation    Boolean        @default(true)
+  notifyReschedule      Boolean        @default(true)
+  notifyClinicAnnouncements Boolean    @default(true)
+  sortOrder    Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  business     Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user         User?          @relation(fields: [userId], references: [id])
+  services     StaffService[]
+  schedules    StaffSchedule[]
+  overrides    ScheduleOverride[]
+  blockedTimes BlockedTime[]
+  appointments Appointment[]
+  reviews      Review[]
+  doctorNotifications DoctorNotification[]
+  @@unique([businessId, slug])
+  @@map("staff")
+}
+
+model StaffService {
+  id        String   @id @default(cuid())
+  staffId   String
+  serviceId String
+  createdAt DateTime @default(now())
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  @@unique([staffId, serviceId])
+  @@map("staff_services")
+}
+
+model StaffSchedule {
+  id        String          @id @default(cuid())
+  staffId   String
+  dayOfWeek Int
+  isWorking Boolean         @default(true)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  staff     Staff           @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  shifts    ScheduleShift[]
+  breaks    ScheduleBreak[]
+  @@unique([staffId, dayOfWeek])
+  @@map("staff_schedules")
+}
+
+model ScheduleShift {
+  id         String        @id @default(cuid())
+  scheduleId String
+  startTime  String
+  endTime    String
+  createdAt  DateTime      @default(now())
+  schedule   StaffSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  @@map("schedule_shifts")
+}
+
+model ScheduleBreak {
+  id         String        @id @default(cuid())
+  scheduleId String
+  startTime  String
+  endTime    String
+  label      String?
+  createdAt  DateTime      @default(now())
+  schedule   StaffSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  @@map("schedule_breaks")
+}
+
+model ScheduleOverride {
+  id        String   @id @default(cuid())
+  staffId   String
+  date      String
+  isWorking Boolean  @default(true)
+  startTime String?
+  endTime   String?
+  reason    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  @@unique([staffId, date])
+  @@map("schedule_overrides")
+}
+
+model BlockedTime {
+  id        String   @id @default(cuid())
+  staffId   String
+  startAt   DateTime
+  endAt     DateTime
+  reason    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  @@map("blocked_times")
+}
+
+model ServiceCategory {
+  id         String    @id @default(cuid())
+  businessId String
+  name       String
+  slug       String
+  order      Int       @default(0)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  services   Service[]
+  business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@unique([businessId, slug])
+  @@map("service_categories")
+}
+
+model Service {
+  id                  String           @id @default(cuid())
+  businessId          String
+  categoryId          String?
+  name                String
+  slug                String
+  description         String?          @db.Text
+  shortDescription    String?
+  image               String?
+  images              String[]         @default([])
+  price               Decimal          @db.Decimal(10, 2)
+  durationMinutes     Int
+  bufferBeforeMinutes Int              @default(0)
+  bufferAfterMinutes  Int              @default(0)
+  isFeatured          Boolean          @default(false)
+  isActive            Boolean          @default(true)
+  sortOrder           Int              @default(0)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  business            Business         @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  category            ServiceCategory? @relation(fields: [categoryId], references: [id])
+  staffServices       StaffService[]
+  appointments        Appointment[]
+  reviews             Review[]
+  @@unique([businessId, slug])
+  @@map("services")
+}
+
+model Customer {
+  id           String        @id @default(cuid())
+  businessId   String
+  userId       String?       @unique
+  name         String
+  email        String
+  phone        String?
+  notes        String?       @db.Text
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  business     Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user         User?         @relation(fields: [userId], references: [id])
+  appointments Appointment[]
+  reviews      Review[]
+  @@unique([businessId, email])
+  @@map("customers")
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+model Appointment {
+  id                 String            @id @default(cuid())
+  businessId         String
+  customerId         String
+  staffId            String
+  serviceId          String
+  startAt            DateTime
+  endAt              DateTime
+  status             AppointmentStatus @default(PENDING)
+  confirmationCode   String            @unique
+  priceAtBooking     Decimal           @db.Decimal(10, 2)
+  durationAtBooking  Int
+  serviceName        String
+  staffName          String
+  customerNotes      String?           @db.Text
+  staffNotes         String?           @db.Text
+  adminNotes         String?           @db.Text
+  cancelledAt        DateTime?
+  cancellationReason String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  business           Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  customer           Customer          @relation(fields: [customerId], references: [id])
+  staff              Staff             @relation(fields: [staffId], references: [id])
+  service            Service           @relation(fields: [serviceId], references: [id])
+  review             Review?
+  notifications      Notification[]
+  doctorNotifications DoctorNotification[]
+  @@index([businessId, startAt])
+  @@index([staffId, startAt])
+  @@index([customerId])
+  @@map("appointments")
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Review {
+  id            String       @id @default(cuid())
+  businessId    String
+  appointmentId String?      @unique
+  customerId    String?
+  staffId       String?
+  serviceId     String?
+  customerName  String
+  rating        Int          @default(5)
+  comment       String       @db.Text
+  status        ReviewStatus @default(PENDING)
+  isVerified    Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  business      Business     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  customer      Customer?    @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  staff         Staff?       @relation(fields: [staffId], references: [id], onDelete: SetNull)
+  service       Service?     @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  @@index([businessId, status])
+  @@map("reviews")
+}
+
+model Testimonial {
+  id          String   @id @default(cuid())
+  businessId  String
+  name        String
+  role        String?
+  quote       String   @db.Text
+  image       String?
+  rating      Int      @default(5)
+  isPublished Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@map("testimonials")
+}
+
+model FAQ {
+  id         String   @id @default(cuid())
+  businessId String
+  question   String
+  answer     String   @db.Text
+  isActive   Boolean  @default(true)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@map("faqs")
+}
+
+enum BlogPostStatus {
+  DRAFT
+  PUBLISHED
+  SCHEDULED
+}
+
+model BlogPost {
+  id          String         @id @default(cuid())
+  businessId  String
+  title       String
+  slug        String
+  excerpt     String?
+  content     String         @db.Text
+  image       String?
+  category    String?
+  tags        String[]
+  authorName  String?
+  status      BlogPostStatus @default(DRAFT)
+  publishedAt DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  business    Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@unique([businessId, slug])
+  @@map("blog_posts")
+}
+
+enum NotificationType {
+  BOOKING_CONFIRMATION
+  BOOKING_CANCELLATION
+  BOOKING_REMINDER
+  BOOKING_RESCHEDULED
+  ADMIN_NEW_BOOKING
+  STAFF_NEW_BOOKING
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+model Notification {
+  id             String             @id @default(cuid())
+  businessId     String
+  appointmentId  String?
+  type           NotificationType
+  status         NotificationStatus @default(PENDING)
+  recipientEmail String
+  subject        String
+  body           String             @db.Text
+  sentAt         DateTime?
+  error          String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  business       Business           @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  appointment    Appointment?       @relation(fields: [appointmentId], references: [id])
+  @@map("notifications")
+}
+
+model DoctorNotification {
+  id            String       @id @default(cuid())
+  staffId       String
+  appointmentId String?
+  type          String       // "NEW_APPOINTMENT" | "APPOINTMENT_CANCELLED" | "APPOINTMENT_RESCHEDULED" | "CLINIC_ANNOUNCEMENT"
+  title         String
+  message       String       @db.Text
+  isRead        Boolean      @default(false)
+  readAt        DateTime?
+  metadata      Json?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  staff         Staff        @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  @@index([staffId, isRead])
+  @@index([staffId, createdAt])
+  @@map("doctor_notifications")
+}
