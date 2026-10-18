@@ -1,7 +1,7 @@
 import React from "react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { CalendarDays, ArrowRight, Star, ShieldCheck, Sparkles, CheckCircle2, HeartHandshake } from "lucide-react"
+import { CalendarDays, ArrowRight, Star, ShieldCheck, Sparkles, CheckCircle2 } from "lucide-react"
 
 interface HeroSectionProps {
   content: Record<string, any> | null
@@ -10,13 +10,12 @@ interface HeroSectionProps {
   bookingBar?: React.ReactNode
 }
 
-// Premier close-up dental smile photography from Unsplash
-const DEFAULT_MACRO_SMILE_IMAGE = "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=1600&q=90"
-const SECONDARY_SMILE_FOCUS_IMAGE = "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=1200&q=90"
+// High-definition macro smile photography reference from Unsplash
+const DEFAULT_MACRO_SMILE_IMAGE = "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=2400&q=90"
 
 export function HeroSection({ content, businessName, appointmentLabel, bookingBar }: HeroSectionProps) {
-  const heading = content?.heading ?? `Healthy Smiles Begin With Exceptional Care`
-  const subheading = content?.subheading ?? `Experience gentle, state-of-the-art cosmetic dentistry and personalized smile design at ${businessName}.`
+  const heading = content?.heading ?? `Healthy Smiles Begin With Exceptional Care.`
+  const subheading = content?.subheading ?? `World-class cosmetic dentistry, digital smile design, and gentle personalized care at ${businessName}.`
   const primaryCta = content?.primaryCta ?? `Book ${appointmentLabel}`
   const secondaryCta = content?.secondaryCta ?? "Explore Treatments"
 
@@ -32,31 +31,44 @@ export function HeroSection({ content, businessName, appointmentLabel, bookingBa
   const stat1Value = content?.stat1Value || "2,500+"
   const stat1Label = content?.stat1Label || "Happy Smiles"
   const stat2Value = content?.stat2Value || "12"
-  const stat2Label = content?.stat2Label || "Specialists"
+  const stat2Label = content?.stat2Label || "Certified Specialists"
 
   return (
     <section
       id="home"
-      className="relative overflow-hidden scroll-mt-20 min-h-[calc(100svh-100px)] lg:min-h-[820px] flex flex-col justify-between bg-gradient-to-b from-[rgb(var(--primary)/0.05)] via-[rgb(var(--background))] to-[rgb(var(--background))]"
+      className="relative overflow-hidden scroll-mt-20 min-h-[calc(100svh-100px)] lg:min-h-[820px] flex flex-col justify-between"
     >
-      {/* 1. Subtle Luminous Ambient Dental Glow */}
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-[rgb(var(--primary)/0.08)] rounded-full blur-3xl pointer-events-none -z-10" />
-      <div className="absolute top-1/3 left-10 w-72 h-72 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none -z-10" />
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[rgb(var(--border))] to-transparent" />
+      {/* 1. Full-Bleed Whole Image Photographic Canvas (Focus on Radiant Smile) */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none">
+        <img
+          src={heroImage}
+          alt="Radiant healthy smile dental care"
+          className="w-full h-full object-cover object-[center_right_15%] sm:object-[center_right_25%] lg:object-[center_right_35%]"
+        />
 
-      {/* 2. Main Hero Content Container */}
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full flex-1 flex items-center py-8 lg:py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center w-full">
-          {/* Left Column: Dribbble Editorial Storytelling */}
-          <div className="lg:col-span-6 space-y-6 text-left">
+        {/* 2. Dribbble-Inspired Editorial Vignette (Odentries / Dentora Style) */}
+        {/* Desktop: Seamlessly transitions from clean solid background on the left to reveal the bright smiling teeth on the right */}
+        <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/85 via-white/40 to-transparent dark:from-slate-950/95 dark:via-slate-950/85 dark:via-slate-950/40 dark:to-transparent hidden lg:block" />
+        {/* Mobile/Tablet: Vertical darkening gradient to ensure full readability directly over the whole image */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/85 to-white/90 dark:from-slate-950/95 dark:via-slate-950/85 dark:to-slate-950/90 lg:hidden" />
+
+        {/* Top hairline border */}
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[rgb(var(--border))] to-transparent" />
+      </div>
+
+      {/* 3. Main Hero Content Container */}
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full flex-1 flex items-center py-10 lg:py-14">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center w-full">
+          {/* Left Column: High-Contrast Editorial Storytelling */}
+          <div className="lg:col-span-7 space-y-6 max-w-2xl text-left">
             {/* Dynamic Booking Status Banner */}
             {acceptingBookings ? (
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 text-xs font-semibold text-emerald-800 dark:text-emerald-300 shadow-xs">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-500/25 bg-[rgb(var(--card)/0.8)] dark:bg-emerald-950/70 text-xs font-semibold text-emerald-700 dark:text-emerald-300 backdrop-blur-md shadow-xs">
                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                 {badgeText}
               </div>
             ) : (
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-amber-500/25 bg-amber-500/10 text-xs font-semibold text-amber-800 dark:text-amber-300 shadow-xs">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-amber-500/25 bg-[rgb(var(--card)/0.8)] dark:bg-amber-950/70 text-xs font-semibold text-amber-700 dark:text-amber-300 backdrop-blur-md shadow-xs">
                 <span className="h-2 w-2 rounded-full bg-amber-500" />
                 New patient bookings currently paused
               </div>
@@ -64,7 +76,7 @@ export function HeroSection({ content, businessName, appointmentLabel, bookingBa
 
             {/* Dribbble Editorial Headline with Elegant Italic Serif Accent */}
             <h1
-              className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold tracking-tight leading-[1.12] text-[rgb(var(--foreground))]"
+              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.12] text-[rgb(var(--foreground))] drop-shadow-xs"
               style={{ fontFamily: "var(--font-heading)" }}
             >
               Healthy Smiles Begin With{" "}
@@ -78,12 +90,12 @@ export function HeroSection({ content, businessName, appointmentLabel, bookingBa
               {subheading}
             </p>
 
-            {/* CTAs */}
+            {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3.5 pt-1">
               <Link to="/booking">
                 <Button
                   size="lg"
-                  className="gap-2 w-full sm:w-auto h-12 px-7 font-bold shadow-lg shadow-[rgb(var(--primary)/0.2)] cursor-pointer"
+                  className="gap-2 w-full sm:w-auto h-12 px-7 font-bold shadow-lg shadow-[rgb(var(--primary)/0.25)] cursor-pointer"
                 >
                   <CalendarDays className="h-4.5 w-4.5" />
                   {primaryCta}
@@ -93,7 +105,7 @@ export function HeroSection({ content, businessName, appointmentLabel, bookingBa
                 <Button
                   variant="outline"
                   size="lg"
-                  className="gap-2 w-full sm:w-auto h-12 px-7 font-semibold border-[rgb(var(--border))] text-[rgb(var(--foreground))] hover:bg-[rgb(var(--muted))] cursor-pointer transition-all"
+                  className="gap-2 w-full sm:w-auto h-12 px-7 font-semibold border-[rgb(var(--border))] text-[rgb(var(--foreground))] bg-[rgb(var(--card)/0.6)] hover:bg-[rgb(var(--muted))] backdrop-blur-md cursor-pointer transition-all"
                 >
                   {secondaryCta}
                   <ArrowRight className="h-4 w-4" />
@@ -101,8 +113,8 @@ export function HeroSection({ content, businessName, appointmentLabel, bookingBa
               </Link>
             </div>
 
-            {/* Social Proof & Clinical Indicators */}
-            <div className="pt-4 flex flex-wrap items-center gap-5 text-xs text-[rgb(var(--muted-foreground))] border-t border-[rgb(var(--border))]">
+            {/* Clinical Trust & Quality Badges */}
+            <div className="pt-4 flex flex-wrap items-center gap-4 text-xs text-[rgb(var(--muted-foreground))] border-t border-[rgb(var(--border))]">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-4.5 w-4.5 text-[rgb(var(--primary))] shrink-0" />
                 <span>
@@ -119,70 +131,48 @@ export function HeroSection({ content, businessName, appointmentLabel, bookingBa
               <span className="text-[rgb(var(--border))] hidden sm:inline">•</span>
               <div className="hidden sm:flex items-center gap-1.5">
                 <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                <span>Painless Care Guarantee</span>
+                <span>Painless & Gentle Care Guarantee</span>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Signature Dribbble Smile Focus with Zoom Lens Card */}
-          <div className="lg:col-span-6 relative flex items-center justify-center">
-            {/* Main Portrait Card: Macro Radiant Smile Photo */}
-            <div className="relative w-full max-w-lg aspect-[4/3] sm:aspect-[14/10] lg:aspect-[4/3] rounded-[calc(var(--radius)+12px)] overflow-hidden border border-[rgb(var(--border))] bg-[rgb(var(--card))] shadow-2xl">
-              <img
-                src={heroImage}
-                alt="Radiant healthy smile dental care"
-                className="object-cover w-full h-full object-center hover:scale-105 transition-transform duration-700 ease-out"
-              />
-
-              {/* Top Floating Badge */}
-              <div className="absolute top-4 right-4 z-20">
-                <div className="bg-[rgb(var(--background)/0.85)] backdrop-blur-md border border-[rgb(var(--border))] rounded-full px-3.5 py-1 text-[11px] font-bold text-[rgb(var(--foreground))] shadow-md flex items-center gap-1.5">
-                  <Sparkles className="h-3 w-3 text-[rgb(var(--primary))]" />
-                  <span>Digital Smile Design</span>
-                </div>
+          {/* Right Column: Floating Dribbble Micro-Widgets directly framing the Whole-Image Smile */}
+          <div className="lg:col-span-5 hidden lg:flex flex-col justify-between items-end h-[340px] pointer-events-none pr-4">
+            {/* Floating Micro-Card 1: Next Available Slot */}
+            <div className="pointer-events-auto bg-[rgb(var(--card)/0.85)] dark:bg-slate-900/85 backdrop-blur-xl border border-[rgb(var(--border))] rounded-2xl p-4 shadow-2xl flex items-center gap-3.5 max-w-xs transition-all hover:scale-105 duration-300">
+              <div className="h-10 w-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+                <CalendarDays className="h-5 w-5" />
               </div>
-
-              {/* Bottom Subtle Gradient for Focus Badge Contrast */}
-              <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[rgb(var(--card)/0.9)] via-[rgb(var(--card)/0.4)] to-transparent pointer-events-none" />
-            </div>
-
-            {/* Overlapping Focus Frame / Macro Teeth Zoom Badge (Signature Dribbble Reference) */}
-            <div className="absolute -bottom-5 -left-2 sm:-left-6 z-30 bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-2xl p-3 sm:p-4 shadow-2xl max-w-[240px] sm:max-w-[270px] backdrop-blur-xl flex items-center gap-3 transition-transform hover:-translate-y-1 duration-300">
-              <div className="relative h-14 w-14 sm:h-16 sm:w-16 rounded-xl overflow-hidden border border-[rgb(var(--primary)/0.3)] shrink-0 shadow-inner">
-                <img
-                  src={SECONDARY_SMILE_FOCUS_IMAGE}
-                  alt="Teeth whitening close-up"
-                  className="object-cover w-full h-full"
-                />
-                <div className="absolute inset-0 ring-1 ring-inset ring-white/20" />
-              </div>
-              <div className="space-y-0.5">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-[rgb(var(--primary))] flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[rgb(var(--primary))]" />
-                  Smile Focus
+              <div>
+                <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  Next Available Slot
                 </div>
-                <div className="text-xs sm:text-sm font-bold text-[rgb(var(--foreground))] leading-tight">
-                  Beautiful Smiles Start Here
-                </div>
-                <div className="flex items-center gap-1 text-[11px] text-[rgb(var(--muted-foreground))]">
-                  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                  <span>4.9 / 5.0 Rating</span>
-                </div>
+                <div className="text-sm font-bold text-[rgb(var(--foreground))] mt-0.5">Today at 2:30 PM</div>
               </div>
             </div>
 
-            {/* Floating Live Slot Badge (Top Left Corner) */}
-            <div className="absolute -top-4 -right-2 sm:-right-4 z-30 hidden sm:flex items-center gap-2 bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-full px-4 py-2 shadow-xl backdrop-blur-md">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs font-semibold text-[rgb(var(--foreground))]">
-                Next Slot: <strong className="text-[rgb(var(--primary))]">Today 2:30 PM</strong>
-              </span>
+            {/* Floating Micro-Card 2: Beautiful Smiles Start Here & Satisfaction */}
+            <div className="pointer-events-auto bg-[rgb(var(--card)/0.85)] dark:bg-slate-900/85 backdrop-blur-xl border border-[rgb(var(--border))] rounded-2xl p-4 shadow-2xl space-y-2 max-w-xs transition-all hover:scale-105 duration-300">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-[rgb(var(--primary))] uppercase tracking-wider">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span>Beautiful Smiles</span>
+                </div>
+                <span className="text-xs font-bold text-amber-500 flex items-center gap-1 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                  <Star className="h-3 w-3 fill-amber-500" />
+                  4.9 / 5.0
+                </span>
+              </div>
+              <div className="text-xs font-medium text-[rgb(var(--muted-foreground))]">
+                <strong className="text-[rgb(var(--foreground))] font-bold">{stat1Value}</strong> radiant smiles transformed with digital precision aesthetics.
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 3. Docked Instant Appointment Finder Bar */}
+      {/* 4. Docked Instant Appointment Finder Bar */}
       {bookingBar && (
         <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6 lg:pb-8">
           {bookingBar}
