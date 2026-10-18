@@ -10,8 +10,8 @@ interface HeroSectionProps {
   bookingBar?: React.ReactNode
 }
 
-// High-definition macro smile photography reference from Unsplash
-const DEFAULT_MACRO_SMILE_IMAGE = "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=2400&q=90"
+// Verified high-definition macro smile photography (matches Odentries & Dentora Dribbble references)
+const DEFAULT_MACRO_SMILE_IMAGE = "/hero-smile.jpg"
 
 export function HeroSection({ content, businessName, appointmentLabel, bookingBar }: HeroSectionProps) {
   const heading = content?.heading ?? `Healthy Smiles Begin With Exceptional Care.`
@@ -19,9 +19,10 @@ export function HeroSection({ content, businessName, appointmentLabel, bookingBa
   const primaryCta = content?.primaryCta ?? `Book ${appointmentLabel}`
   const secondaryCta = content?.secondaryCta ?? "Explore Treatments"
 
-  // Use custom image if set in customizer, otherwise default to high-res macro smile photography
+  // Use custom image if set in customizer, otherwise default to verified macro smile photography
   const rawImage = content?.image
-  const heroImage = (rawImage && rawImage !== "/hero-dental.jpg" && rawImage.trim().length > 0)
+  const isOldPlaceholder = !rawImage || rawImage.includes("1588776814546") || rawImage.includes("1606811841689") || rawImage === "/hero-dental.jpg"
+  const heroImage = (!isOldPlaceholder && rawImage.trim().length > 0)
     ? rawImage
     : DEFAULT_MACRO_SMILE_IMAGE
 

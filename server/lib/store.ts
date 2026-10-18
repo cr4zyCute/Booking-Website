@@ -52,7 +52,7 @@ export let inMemoryHeroSection: HeroContent = {
   subheading: "World-class dental aesthetics, digital smile design, and gentle personalized care in Veridian Dental Studio.",
   primaryCta: "Book Appointment",
   secondaryCta: "Explore Services",
-  image: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=2400&q=85",
+  image: "/hero-smile.jpg",
   showBadge: true,
   badgeText: "Now accepting new patient bookings",
   stat1Value: "2,500+",
