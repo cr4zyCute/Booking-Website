@@ -2,6 +2,7 @@ import React from "react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { CalendarDays, ArrowRight, Star, ShieldCheck, Sparkles, Award, AlertCircle } from "lucide-react"
+import { HeroBackground } from "./HeroBackground"
 
 interface HeroSectionProps {
   content: Record<string, any> | null
@@ -28,20 +29,24 @@ export function HeroSection({ content, businessName, appointmentLabel }: HeroSec
   // 1. CENTER / FULL SECTION LAYOUT
   if (imagePosition === "center") {
     return (
-      <section id="home" className="relative overflow-hidden scroll-mt-20 min-h-[85vh] lg:min-h-[90vh] flex items-center justify-center">
+      <section id="home" className="relative overflow-hidden scroll-mt-20 min-h-[70vh] lg:min-h-[75vh] flex items-center justify-center">
         {/* Full Section Background Image with Tailored Dark Gradient Mask for Maximum Readability */}
         <div
-          className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
+          className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transition-all duration-700 scale-[1.01]"
           style={{
             backgroundImage: `url('${image}')`,
           }}
         />
 
-        {/* Readability Gradient Layer (Adapts smoothly across dark and light themes) */}
-        <div className="absolute inset-0 z-1 bg-gradient-to-t from-slate-950/95 via-slate-950/80 to-slate-950/70 backdrop-blur-[2px]" />
+        {/* Readability Multi-Stop Progressive Vignette */}
+        <div className="absolute inset-0 z-1 bg-gradient-to-t from-slate-950/95 via-slate-950/80 to-slate-950/70 backdrop-blur-[1.5px]" />
 
-        {/* Ambient Glowing Accent */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-[rgb(var(--primary)/0.25)] rounded-full blur-[140px] pointer-events-none z-1" />
+        {/* Dual Ambient Luminous Accents */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-[rgb(var(--primary)/0.28)] rounded-full blur-[150px] pointer-events-none z-1" />
+        <div className="absolute top-1/3 right-1/4 w-[350px] h-[350px] bg-teal-400/15 rounded-full blur-[130px] pointer-events-none z-1" />
+
+        {/* Architectural Fine Grid Overlay with Radial Mask */}
+        <div className="absolute inset-0 z-1 bg-[linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_35%,#000_30%,transparent_100%)] pointer-events-none" />
 
         <div className="relative z-10 mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-20 text-center text-white space-y-8">
           {/* Dynamic Booking Status Banner */}
@@ -122,7 +127,7 @@ export function HeroSection({ content, businessName, appointmentLabel }: HeroSec
   return (
     <section id="home" className="relative overflow-hidden scroll-mt-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-[calc(100vh-4rem)] py-16 lg:py-0">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-[calc(78vh-4rem)] py-12 lg:py-16">
           {/* Text Column (Ordered 1 if image is right, 2 if image is left) */}
           <div className={`space-y-8 max-w-xl ${isImageLeft ? "lg:order-2" : "lg:order-1"}`}>
             {/* Dynamic Booking Status Banner */}
@@ -163,22 +168,49 @@ export function HeroSection({ content, businessName, appointmentLabel }: HeroSec
               </Link>
             </div>
 
-            {/* Additional Specialist Badge below CTAs on Split Layout */}
-            {stat2Value && (
-              <div className="pt-2 flex items-center gap-2 text-xs text-[rgb(var(--muted-foreground))]">
-                <div className="h-6 w-6 rounded-full bg-[rgb(var(--primary)/0.1)] text-[rgb(var(--primary))] flex items-center justify-center font-bold">
-                  <ShieldCheck className="h-3.5 w-3.5" />
+            {/* Additional Specialist & Guarantee Badges below CTAs */}
+            <div className="pt-2 flex flex-wrap items-center gap-4 text-xs text-[rgb(var(--muted-foreground))]">
+              {stat2Value && (
+                <div className="flex items-center gap-2">
+                  <div className="h-6 w-6 rounded-full bg-[rgb(var(--primary)/0.12)] text-[rgb(var(--primary))] flex items-center justify-center font-bold">
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                  </div>
+                  <span>
+                    <strong className="text-[rgb(var(--foreground))] font-semibold">{stat2Value}</strong> {stat2Label}
+                  </span>
                 </div>
-                <span>
-                  <strong className="text-[rgb(var(--foreground))] font-semibold">{stat2Value}</strong> {stat2Label}
-                </span>
+              )}
+              <span className="hidden sm:inline text-[rgb(var(--border))]">•</span>
+              <div className="flex items-center gap-1.5 text-xs text-[rgb(var(--muted-foreground))]">
+                <Sparkles className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                <span>Painless & Gentle Clinical Care</span>
               </div>
-            )}
+            </div>
           </div>
 
           {/* Image Column (Ordered 2 if image is right, 1 if image is left) */}
           <div className={`relative lg:block ${isImageLeft ? "lg:order-1" : "lg:order-2"}`}>
-            <div className="relative aspect-[4/3] lg:aspect-square overflow-hidden rounded-[calc(var(--radius)+8px)] bg-[rgb(var(--muted))] shadow-xl border border-[rgb(var(--border))]">
+            {/* Luminous Ambient Halo behind the Image Card */}
+            <div className="absolute -inset-2 sm:-inset-4 bg-gradient-to-tr from-[rgb(var(--primary)/0.25)] to-teal-400/20 rounded-[calc(var(--radius)+18px)] blur-2xl opacity-75 pointer-events-none" />
+
+            {/* Dribbble Signature 1: Top Floating "Next Available Slot" Live Micro-Card */}
+            <div className={`absolute -top-3 ${isImageLeft ? "-right-3 sm:-right-4" : "-left-3 sm:-left-4"} z-20 bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-[calc(var(--radius)+4px)] shadow-xl p-2.5 sm:p-3 flex items-center gap-2.5 backdrop-blur-md`}>
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+              </span>
+              <div className="space-y-0.5">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                  Next Available Slot
+                </div>
+                <div className="text-xs font-semibold text-[rgb(var(--foreground))]">
+                  Today at 2:30 PM
+                </div>
+              </div>
+            </div>
+
+            {/* Main Portrait Frame with Refined Border and Shadow */}
+            <div className="relative aspect-[4/3] lg:aspect-square overflow-hidden rounded-[calc(var(--radius)+12px)] bg-[rgb(var(--card))] shadow-2xl border border-[rgb(var(--border))]">
               {image ? (
                 <img src={image} alt="Hero" className="object-cover w-full h-full" />
               ) : (
@@ -191,27 +223,36 @@ export function HeroSection({ content, businessName, appointmentLabel }: HeroSec
                   </div>
                 </div>
               )}
-              {/* Decorative element */}
-              <div className="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-[calc(var(--radius)+8px)]" />
+              {/* Decorative inner contour */}
+              <div className="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-[calc(var(--radius)+12px)]" />
             </div>
 
-            {/* Floating stat card */}
-            {stat1Value && (
-              <div
-                className={`absolute -bottom-4 ${
-                  isImageLeft ? "-right-4" : "-left-4"
-                } hidden lg:block bg-[rgb(var(--card))] rounded-[var(--radius)] shadow-xl border border-[rgb(var(--border))] p-4 min-w-[140px]`}
-              >
-                <div className="text-2xl font-bold text-[rgb(var(--primary))]">{stat1Value}</div>
-                <div className="text-xs text-[rgb(var(--muted-foreground))] mt-0.5">{stat1Label}</div>
+            {/* Dribbble Signature 2: Bottom Floating Patient Rating & Avatar Stack Micro-Card */}
+            <div className={`absolute -bottom-4 ${isImageLeft ? "-left-3 sm:-left-5" : "-right-3 sm:-right-5"} z-20 bg-[rgb(var(--card))] border border-[rgb(var(--border))] rounded-[calc(var(--radius)+4px)] shadow-xl p-3 sm:p-3.5 space-y-1.5 min-w-[175px] backdrop-blur-md`}>
+              <div className="flex items-center gap-1 text-amber-400">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />
+                ))}
+                <span className="text-xs font-bold text-[rgb(var(--foreground))] ml-1">4.9/5</span>
               </div>
-            )}
+              <div className="flex items-center gap-2">
+                {/* Overlapping Patient Avatars */}
+                <div className="flex -space-x-1.5 overflow-hidden">
+                  <span className="inline-flex h-5 w-5 rounded-full ring-2 ring-[rgb(var(--card))] bg-cyan-700 text-[9px] font-bold text-white items-center justify-center">M</span>
+                  <span className="inline-flex h-5 w-5 rounded-full ring-2 ring-[rgb(var(--card))] bg-teal-600 text-[9px] font-bold text-white items-center justify-center">D</span>
+                  <span className="inline-flex h-5 w-5 rounded-full ring-2 ring-[rgb(var(--card))] bg-emerald-600 text-[9px] font-bold text-white items-center justify-center">S</span>
+                </div>
+                <span className="text-[11px] text-[rgb(var(--muted-foreground))] font-medium">
+                  {stat1Value} {stat1Label}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Subtle grid background */}
-      <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,rgb(var(--border)/0.3)_1px,transparent_1px),linear-gradient(to_bottom,rgb(var(--border)/0.3)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
+      {/* Multi-layered Luminous Clinical Background */}
+      <HeroBackground variant="split" />
     </section>
   )
 }

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react"
 import { Outlet, useLocation } from "react-router-dom"
 import { useBusiness } from "@/context/BusinessContext"
+import { ClinicTopBar } from "@/components/layout/ClinicTopBar"
 import { PublicNav, NavigationItemData } from "@/components/layout/PublicNav"
 import { PublicFooter } from "@/components/layout/PublicFooter"
+import { EmergencyQuickDock } from "@/components/common/EmergencyQuickDock"
 import { motion, AnimatePresence } from "framer-motion"
 
 export function PublicLayout() {
@@ -31,6 +33,11 @@ export function PublicLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[rgb(var(--background))] text-[rgb(var(--foreground))]">
+      <ClinicTopBar
+        businessName={business.name}
+        phone={business.phone}
+        address={business.address}
+      />
       <PublicNav
         businessName={business.name}
         logo={business.logo}
@@ -49,6 +56,8 @@ export function PublicLayout() {
         </motion.div>
       </main>
       <PublicFooter business={business} appointmentLabel={appointmentLabel} />
+      <EmergencyQuickDock phone={business.phone} />
     </div>
   )
 }
+

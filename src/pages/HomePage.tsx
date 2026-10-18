@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react"
 import { useBusiness } from "@/context/BusinessContext"
 import { HeroSection } from "@/components/sections/HeroSection"
+import { QuickBookingBar } from "@/components/booking/QuickBookingBar"
 import { TrustStatsSection } from "@/components/sections/TrustStatsSection"
+import { InsuranceTrustStrip } from "@/components/sections/InsuranceTrustStrip"
 import { ServicesSection } from "@/components/sections/ServicesSection"
 import { StaffSection } from "@/components/sections/StaffSection"
 import { TestimonialsSection } from "@/components/sections/TestimonialsSection"
 import { FAQSection } from "@/components/sections/FAQSection"
 import { ContactSection } from "@/components/sections/ContactSection"
 import { BookingCTASection } from "@/components/sections/BookingCTASection"
-
-
 
 export function HomePage() {
   const { business, terminology } = useBusiness()
@@ -88,15 +88,30 @@ export function HomePage() {
     switch (type) {
       case "HERO":
         return (
-          <HeroSection
-            key={section.id || "hero"}
-            content={content}
-            businessName={business.name}
-            appointmentLabel={terminology.appointmentSingular}
-          />
+          <React.Fragment key={section.id || "hero"}>
+            <HeroSection
+              content={content}
+              businessName={business.name}
+              appointmentLabel={terminology.appointmentSingular}
+            />
+            {/* Instant Appointment Finder Bar docked right beneath the Hero */}
+            <div className="relative z-20 -mt-10 sm:-mt-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-6">
+              <QuickBookingBar
+                services={services}
+                staff={staff}
+                serviceLabel={terminology.serviceSingular}
+                staffLabel={terminology.staffSingular}
+              />
+            </div>
+          </React.Fragment>
         )
       case "TRUST_STATS":
-        return <TrustStatsSection key={section.id || "trust_stats"} content={content} />
+        return (
+          <React.Fragment key={section.id || "trust_stats"}>
+            <TrustStatsSection content={content} />
+            <InsuranceTrustStrip />
+          </React.Fragment>
+        )
       case "SERVICES":
         return (
           <ServicesSection
@@ -138,3 +153,4 @@ export function HomePage() {
 
   return <div>{activeSections.map(renderSection)}</div>
 }
+
