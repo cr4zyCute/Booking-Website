@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import { Star, ShieldCheck, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -23,14 +23,15 @@ interface TestimonialsSectionProps {
 }
 
 export function TestimonialsSection({ testimonials = [], reviews = [] }: TestimonialsSectionProps) {
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const containerRef = useRef<HTMLDivElement>(null)
   const [isPaused, setIsPaused] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
-  const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const animFrameId = useRef<number | null>(null)
+  const lastTimeRef = useRef<number | null>(null)
 
   // Combine verified patient reviews and testimonials from PostgreSQL or default fallbacks
-  const combinedItems: ReviewItem[] = [
+  const baseItems: ReviewItem[] = [
     ...reviews.map(r => ({
       id: `rev-${r.id}`,
       customerName: r.customerName || r.name || (r as any).authorName || "Verified Patient",
@@ -61,79 +62,79 @@ export function TestimonialsSection({ testimonials = [], reviews = [] }: Testimo
     return text.trim().length > 0
   })
 
-  const total = combinedItems.length
+  // Duplicate the list 4 times for seamless, non-stop circular loop scrolling
+  const loopItems = React.useMemo(() => {
+    if (baseItems.length === 0) return []
+    return [...baseItems, ...baseItems, ...baseItems, ...baseItems]
+  }, [baseItems])
 
-  // Scroll to a specific card index smoothly and center it in viewport
-  const scrollToIndex = useCallback((index: number) => {
-    if (!scrollContainerRef.current) return
-    const container = scrollContainerRef.current
-    const cards = container.children
-    if (cards[index]) {
-      const targetCard = cards[index] as HTMLElement
-      const targetLeft = targetCard.offsetLeft - (container.offsetWidth - targetCard.offsetWidth) / 2
-      container.scrollTo({
-        left: Math.max(0, targetLeft),
-        behavior: "smooth",
-      })
-    }
-    setCurrentIndex(index)
-  }, [])
+  const totalBase = baseItems.length
 
-  const handleNext = useCallback(() => {
-    if (total === 0) return
-    const nextIndex = (currentIndex + 1) % total
-    scrollToIndex(nextIndex)
-  }, [currentIndex, total, scrollToIndex])
-
-  const handlePrev = useCallback(() => {
-    if (total === 0) return
-    const prevIndex = (currentIndex - 1 + total) % total
-    scrollToIndex(prevIndex)
-  }, [currentIndex, total, scrollToIndex])
-
-  // Track active index as the user scrolls or drags horizontally (relative to container center)
-  const handleScroll = () => {
-    if (!scrollContainerRef.current) return
-    const container = scrollContainerRef.current
-    const containerCenter = container.scrollLeft + container.offsetWidth / 2
-    const cards = Array.from(container.children) as HTMLElement[]
-    if (cards.length === 0) return
-
-    let closestIndex = 0
-    let minDistance = Infinity
-    cards.forEach((card, idx) => {
-      const cardCenter = card.offsetLeft + card.offsetWidth / 2
-      const distance = Math.abs(cardCenter - containerCenter)
-      if (distance < minDistance) {
-        minDistance = distance
-        closestIndex = idx
-      }
-    })
-    setCurrentIndex(closestIndex)
-  }
-
-  // 3-second auto-slide interval (pauses on user hover or interaction)
+  // Continuous buttery-smooth 60fps marquee animation loop with pause controls
   useEffect(() => {
-    if (total <= 1 || isPaused || isHovered) {
-      if (timerRef.current) clearInterval(timerRef.current)
-      return
+    const container = containerRef.current
+    if (!container || totalBase === 0) return
+
+    const speed = 0.55 // pixels per frame (~33px/sec for relaxed reading)
+
+    const step = (timestamp: number) => {
+      if (!lastTimeRef.current) lastTimeRef.current = timestamp
+      const elapsed = timestamp - lastTimeRef.current
+      lastTimeRef.current = timestamp
+
+      if (!isPaused && !isHovered) {
+        container.scrollLeft += speed * (elapsed / 16.67)
+
+        // When scrolled halfway through the multi-loop array, wrap back smoothly to maintain seamless infinite illusion
+        const halfWidth = container.scrollWidth / 2
+        if (container.scrollLeft >= halfWidth) {
+          container.scrollLeft -= halfWidth
+        }
+      }
+
+      // Calculate which card is closest to center of screen for dynamic magnification
+      const containerCenter = container.scrollLeft + container.offsetWidth / 2
+      const cards = Array.from(container.children) as HTMLElement[]
+      if (cards.length > 0) {
+        let closestIdx = 0
+        let minDiff = Infinity
+        cards.forEach((card, idx) => {
+          const cardCenter = card.offsetLeft + card.offsetWidth / 2
+          const diff = Math.abs(cardCenter - containerCenter)
+          if (diff < minDiff) {
+            minDiff = diff
+            closestIdx = idx % totalBase
+          }
+        })
+        setActiveIndex(closestIdx)
+      }
+
+      animFrameId.current = requestAnimationFrame(step)
     }
 
-    timerRef.current = setInterval(() => {
-      handleNext()
-    }, 3000)
+    animFrameId.current = requestAnimationFrame(step)
 
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
+      if (animFrameId.current) cancelAnimationFrame(animFrameId.current)
     }
-  }, [total, isPaused, isHovered, handleNext])
+  }, [isPaused, isHovered, totalBase])
 
-  if (!combinedItems.length) return null
+  const handleScrollByCards = (direction: "left" | "right") => {
+    if (!containerRef.current) return
+    const container = containerRef.current
+    const shift = 440 // approx width of one card + gap
+    container.scrollBy({
+      left: direction === "left" ? -shift : shift,
+      behavior: "smooth",
+    })
+  }
+
+  if (!baseItems.length) return null
 
   return (
     <section id="testimonials" className="py-16 lg:py-24 scroll-mt-20 overflow-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Header with Title and Sliding Controls */}
+        {/* Section Header with Title and Control Buttons */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8">
           <div className="max-w-2xl">
             <p className="text-sm font-medium text-[rgb(var(--primary))] mb-2 uppercase tracking-wider">
@@ -150,12 +151,12 @@ export function TestimonialsSection({ testimonials = [], reviews = [] }: Testimo
             </p>
           </div>
 
-          {/* Controls: Prev, Play/Pause Indicator, Next, Counter */}
+          {/* Action Toolbar */}
           <div className="flex items-center gap-2.5 shrink-0">
             <Button
               variant="outline"
               size="icon"
-              onClick={handlePrev}
+              onClick={() => handleScrollByCards("left")}
               className="h-9 w-9 rounded-full border-[rgb(var(--border))] text-[rgb(var(--foreground))] hover:bg-[rgb(var(--muted))] cursor-pointer shadow-xs transition-colors"
               aria-label="Previous testimonial"
             >
@@ -165,30 +166,26 @@ export function TestimonialsSection({ testimonials = [], reviews = [] }: Testimo
             <button
               type="button"
               onClick={() => setIsPaused(!isPaused)}
-              title={isPaused ? "Resume auto-slide (3s)" : "Pause auto-slide"}
-              className="h-9 px-3 rounded-full border border-[rgb(var(--border))] bg-[rgb(var(--card))] text-[rgb(var(--foreground))] hover:bg-[rgb(var(--muted))] text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+              title={isPaused ? "Resume smooth animation loop" : "Pause animation"}
+              className="h-9 px-3.5 rounded-full border border-[rgb(var(--border))] bg-[rgb(var(--card))] text-[rgb(var(--foreground))] hover:bg-[rgb(var(--muted))] text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs transition-colors"
             >
               {isPaused ? (
                 <>
-                  <Play className="h-3 w-3 fill-current text-[rgb(var(--primary))]" />
+                  <Play className="h-3.5 w-3.5 fill-current text-[rgb(var(--primary))]" />
                   <span>Paused</span>
                 </>
               ) : (
                 <>
                   <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>3s Auto</span>
+                  <span>Auto Loop</span>
                 </>
               )}
             </button>
 
-            <span className="text-xs font-semibold text-[rgb(var(--foreground))] px-3 py-1.5 rounded-full bg-[rgb(var(--card))] border border-[rgb(var(--border))] shadow-xs">
-              {currentIndex + 1} / {total}
-            </span>
-
             <Button
               variant="outline"
               size="icon"
-              onClick={handleNext}
+              onClick={() => handleScrollByCards("right")}
               className="h-9 w-9 rounded-full border-[rgb(var(--border))] text-[rgb(var(--foreground))] hover:bg-[rgb(var(--muted))] cursor-pointer shadow-xs transition-colors"
               aria-label="Next testimonial"
             >
@@ -197,20 +194,23 @@ export function TestimonialsSection({ testimonials = [], reviews = [] }: Testimo
           </div>
         </div>
 
-        {/* Straight Horizontal Line-Up Slider */}
+        {/* Smooth Infinite Looping Track Container */}
         <div
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
-          className="relative group/carousel"
+          className="relative group/carousel py-4"
         >
-          {/* Scrollable Single Straight Row Track with Center Stage Focus */}
+          {/* Subtle Side Fade Overlays for Depth */}
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-12 sm:w-20 bg-gradient-to-r from-[rgb(var(--background))] to-transparent z-10" />
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 sm:w-20 bg-gradient-to-l from-[rgb(var(--background))] to-transparent z-10" />
+
+          {/* Continuous Scroll Container */}
           <div
-            ref={scrollContainerRef}
-            onScroll={handleScroll}
-            className="flex items-center gap-6 overflow-x-auto scrollbar-none snap-x snap-mandatory py-6 px-[6vw] sm:px-[15vw] md:px-[20vw]"
+            ref={containerRef}
+            className="flex items-center gap-6 overflow-x-scroll scrollbar-none py-6 px-4"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            {combinedItems.map((item, index) => {
+            {loopItems.map((item, index) => {
               const authorName = item.customerName || item.name || (item as any).authorName || "Verified Patient"
               const reviewText = item.comment || item.quote || (item as any).content || ""
               const initials = authorName
@@ -219,16 +219,16 @@ export function TestimonialsSection({ testimonials = [], reviews = [] }: Testimo
                 .join("")
                 .slice(0, 2)
 
-              const isFocused = index === currentIndex
+              const baseIdx = index % totalBase
+              const isCenterFocus = baseIdx === activeIndex
 
               return (
                 <div
-                  key={item.id}
-                  onClick={() => scrollToIndex(index)}
-                  className={`snap-center shrink-0 w-[84vw] sm:w-[420px] md:w-[480px] lg:w-[520px] bg-[rgb(var(--card))] rounded-[var(--radius)] border p-6 sm:p-7 flex flex-col justify-between cursor-pointer select-none transition-all duration-500 ease-out ${
-                    isFocused
-                      ? "scale-105 sm:scale-110 z-20 border-[rgb(var(--primary))] ring-2 ring-[rgb(var(--primary)/0.3)] shadow-2xl opacity-100 bg-[rgb(var(--card))]"
-                      : "scale-95 sm:scale-95 z-10 border-[rgb(var(--border))] opacity-60 hover:opacity-85 hover:border-[rgb(var(--primary)/0.5)] shadow-sm bg-[rgb(var(--card)/0.8)]"
+                  key={`${item.id}-loop-${index}`}
+                  className={`shrink-0 w-[84vw] sm:w-[420px] md:w-[480px] lg:w-[500px] bg-[rgb(var(--card))] rounded-[var(--radius)] border p-6 sm:p-7 flex flex-col justify-between select-none transition-all duration-500 ease-out ${
+                    isCenterFocus
+                      ? "scale-105 z-20 border-[rgb(var(--primary))] ring-2 ring-[rgb(var(--primary)/0.3)] shadow-2xl opacity-100 bg-[rgb(var(--card))]"
+                      : "scale-95 z-10 border-[rgb(var(--border))] opacity-70 hover:opacity-90 hover:border-[rgb(var(--primary)/0.4)] shadow-sm bg-[rgb(var(--card)/0.85)]"
                   }`}
                 >
                   <div className="space-y-4">
@@ -238,7 +238,7 @@ export function TestimonialsSection({ testimonials = [], reviews = [] }: Testimo
                           <Star
                             key={i}
                             className={`transition-all duration-300 ${
-                              isFocused ? "h-4.5 w-4.5" : "h-3.5 w-3.5"
+                              isCenterFocus ? "h-4.5 w-4.5" : "h-3.5 w-3.5"
                             } ${
                               i < item.rating ? "fill-amber-400 text-amber-400" : "text-[rgb(var(--border))]"
                             }`}
@@ -247,20 +247,24 @@ export function TestimonialsSection({ testimonials = [], reviews = [] }: Testimo
                       </div>
 
                       {item.isVerified && (
-                        <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full flex items-center gap-1 border transition-colors ${
-                          isFocused
-                            ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-                            : "bg-emerald-500/10 text-emerald-600/80 border-emerald-500/15"
-                        }`}>
+                        <span
+                          className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full flex items-center gap-1 border transition-colors ${
+                            isCenterFocus
+                              ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                              : "bg-emerald-500/10 text-emerald-600/80 border-emerald-500/15"
+                          }`}
+                        >
                           <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                           Verified Booking
                         </span>
                       )}
                     </div>
 
-                    <p className={`text-[rgb(var(--foreground))] leading-relaxed italic transition-all duration-300 line-clamp-4 ${
-                      isFocused ? "text-base sm:text-lg font-medium" : "text-xs sm:text-sm"
-                    }`}>
+                    <p
+                      className={`text-[rgb(var(--foreground))] leading-relaxed italic transition-all duration-300 line-clamp-4 ${
+                        isCenterFocus ? "text-base sm:text-lg font-medium" : "text-xs sm:text-sm"
+                      }`}
+                    >
                       &ldquo;{reviewText}&rdquo;
                     </p>
 
@@ -284,20 +288,24 @@ export function TestimonialsSection({ testimonials = [], reviews = [] }: Testimo
                   </div>
 
                   <div className="flex items-center gap-3.5 pt-4 mt-5 border-t border-[rgb(var(--border))]">
-                    <Avatar className={`border transition-all duration-300 ${
-                      isFocused
-                        ? "h-11 w-11 border-[rgb(var(--primary)/0.6)] ring-2 ring-[rgb(var(--primary)/0.2)]"
-                        : "h-9 w-9 border-[rgb(var(--border))]"
-                    }`}>
+                    <Avatar
+                      className={`border transition-all duration-300 ${
+                        isCenterFocus
+                          ? "h-11 w-11 border-[rgb(var(--primary)/0.6)] ring-2 ring-[rgb(var(--primary)/0.2)]"
+                          : "h-9 w-9 border-[rgb(var(--border))]"
+                      }`}
+                    >
                       <AvatarImage src={item.image ?? undefined} alt={authorName} />
                       <AvatarFallback className="text-xs bg-[rgb(var(--primary)/0.1)] text-[rgb(var(--primary))] font-bold">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <div className={`font-bold text-[rgb(var(--foreground))] transition-all duration-300 ${
-                        isFocused ? "text-sm sm:text-base" : "text-xs sm:text-sm"
-                      }`}>
+                      <div
+                        className={`font-bold text-[rgb(var(--foreground))] transition-all duration-300 ${
+                          isCenterFocus ? "text-sm sm:text-base" : "text-xs sm:text-sm"
+                        }`}
+                      >
                         {authorName}
                       </div>
                       {item.role && <div className="text-xs text-[rgb(var(--muted-foreground))]">{item.role}</div>}
@@ -308,18 +316,15 @@ export function TestimonialsSection({ testimonials = [], reviews = [] }: Testimo
             })}
           </div>
 
-          {/* Quick Pagination Dots Bar */}
-          <div className="mt-6 flex items-center justify-center gap-1.5 flex-wrap">
-            {combinedItems.map((_, idx) => (
-              <button
+          {/* Real-time Indicator Dots */}
+          <div className="mt-4 flex items-center justify-center gap-1.5 flex-wrap">
+            {baseItems.map((_, idx) => (
+              <span
                 key={idx}
-                type="button"
-                onClick={() => scrollToIndex(idx)}
-                aria-label={`Go to slide ${idx + 1}`}
-                className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                  idx === currentIndex
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  idx === activeIndex
                     ? "w-7 bg-[rgb(var(--primary))]"
-                    : "w-2 bg-[rgb(var(--border))] hover:bg-[rgb(var(--primary)/0.5)]"
+                    : "w-2 bg-[rgb(var(--border))]"
                 }`}
               />
             ))}
