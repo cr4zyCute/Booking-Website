@@ -9,7 +9,6 @@ import { StaffSection } from "@/components/sections/StaffSection"
 import { TestimonialsSection } from "@/components/sections/TestimonialsSection"
 import { FAQSection } from "@/components/sections/FAQSection"
 import { ContactSection } from "@/components/sections/ContactSection"
-import { BookingCTASection } from "@/components/sections/BookingCTASection"
 import {
   DEFAULT_SERVICES,
   DEFAULT_STAFF,
@@ -78,7 +77,7 @@ export function HomePage() {
 
   // Fallback default ordered sections if database sections list is not yet loaded
   const activeSections = sections.length > 0
-    ? [...sections].filter(s => s.isEnabled !== false).sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    ? [...sections].filter(s => s.isEnabled !== false && s.type !== "BOOKING_CTA").sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
     : [
         { type: "HERO", isEnabled: true, order: 0, content: null },
         { type: "TRUST_STATS", isEnabled: true, order: 1, content: null },
@@ -87,7 +86,6 @@ export function HomePage() {
         { type: "TESTIMONIALS", isEnabled: true, order: 4, content: null },
         { type: "FAQ", isEnabled: true, order: 5, content: null },
         { type: "CONTACT", isEnabled: true, order: 6, content: null },
-        { type: "BOOKING_CTA", isEnabled: true, order: 7, content: null },
       ]
 
   const renderSection = (section: any) => {
@@ -146,15 +144,6 @@ export function HomePage() {
         return <FAQSection key={section.id || "faq"} faqs={faqs} />
       case "CONTACT":
         return <ContactSection key={section.id || "contact"} />
-      case "BOOKING_CTA":
-        return (
-          <BookingCTASection
-            key={section.id || "booking_cta"}
-            content={content}
-            appointmentLabel={terminology.appointmentSingular}
-            businessName={business.name}
-          />
-        )
       default:
         return null
     }
@@ -162,4 +151,5 @@ export function HomePage() {
 
   return <div>{activeSections.map(renderSection)}</div>
 }
+
 
