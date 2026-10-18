@@ -29,27 +29,38 @@ export function TestimonialsSection({ testimonials = [], reviews = [] }: Testimo
   const [currentPage, setCurrentPage] = useState(0)
   const [direction, setDirection] = useState(0)
 
-  // Combine verified patient reviews and testimonials from PostgreSQL
+  // Combine verified patient reviews and testimonials from PostgreSQL or default fallbacks
   const combinedItems: ReviewItem[] = [
     ...reviews.map(r => ({
       id: `rev-${r.id}`,
-      customerName: r.customerName || "Verified Patient",
-      comment: r.comment,
+      customerName: r.customerName || r.name || (r as any).authorName || "Verified Patient",
+      name: r.name || r.customerName || (r as any).authorName || "Verified Patient",
+      comment: r.comment || r.quote || (r as any).content || "",
+      quote: r.comment || r.quote || (r as any).content || "",
+      role: r.role || "Verified Patient",
       rating: r.rating || 5,
       isVerified: true,
-      service: r.service,
-      staff: r.staff,
+      service: r.service || (r.treatment ? { name: r.treatment } : null),
+      staff: r.staff || (r.doctor ? { name: r.doctor } : null),
     })),
     ...testimonials.map(t => ({
       id: `test-${t.id}`,
-      name: t.name,
-      role: t.role,
-      quote: t.quote,
+      name: t.name || t.authorName || t.customerName || "Verified Patient",
+      customerName: t.customerName || t.authorName || t.name || "Verified Patient",
+      role: t.role || "Verified Patient",
+      quote: t.quote || t.content || t.comment || "",
+      comment: t.quote || t.content || t.comment || "",
       image: t.image,
       rating: t.rating || 5,
-      isVerified: false,
+      isVerified: t.isVerified ?? true,
+      service: t.service || (t.treatment ? { name: t.treatment } : null),
+      staff: t.staff || (t.doctor ? { name: t.doctor } : null),
     })),
-  ]
+  ].filter(item => {
+    const text = item.comment || item.quote || ""
+    return text.trim().length > 0
+  })
+
 
   if (!combinedItems.length) return null
 
@@ -169,13 +180,14 @@ export function TestimonialsSection({ testimonials = [], reviews = [] }: Testimo
               className="grid grid-cols-1 md:grid-cols-2 gap-5"
             >
               {currentItems.map(item => {
-                const authorName = item.customerName || item.name || "Patient"
-                const reviewText = item.comment || item.quote || ""
+                const authorName = item.customerName || item.name || (item as any).authorName || "Verified Patient"
+                const reviewText = item.comment || item.quote || (item as any).content || ""
                 const initials = authorName
                   .split(" ")
                   .map((n: string) => n[0])
                   .join("")
                   .slice(0, 2)
+
 
                 return (
                   <div

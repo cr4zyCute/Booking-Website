@@ -1,6 +1,5 @@
 import { Router } from "express"
-import { prisma, isDbConnected } from "../../src/lib/db/prisma"
-
+import { prisma } from "../../src/lib/db/prisma"
 import { getBusinessContext, invalidateBusinessCache } from "../../src/lib/db/business"
 import { inMemoryHeroSection, inMemoryServices, getInMemoryServices, setAllInMemoryServices } from "../lib/store"
 
@@ -92,8 +91,8 @@ publicRouter.get("/home", async (req, res) => {
     const ctx = await getBusinessContext()
     let businessId = ctx?.business?.id
 
-    if (isDbConnected() && (!businessId || businessId === "demo" || businessId === "demo-clinic")) {
-      const dbBiz = await prisma.business.findFirst().catch(() => null)
+    if (!businessId || businessId === "demo" || businessId === "demo-clinic") {
+      const dbBiz = await prisma.business.findFirst()
       if (dbBiz) {
         businessId = dbBiz.id
       }
@@ -106,8 +105,7 @@ publicRouter.get("/home", async (req, res) => {
     let reviews: any[] = []
     let faqs: any[] = []
 
-    if (isDbConnected()) {
-      try {
+    try {
       const [dbSections, dbServices, dbStaff, dbTestimonials, dbApprovedReviews, dbFaqs] = await Promise.all([
         prisma.websiteSection.findMany({
           where: { businessId, isEnabled: true },
@@ -175,7 +173,6 @@ publicRouter.get("/home", async (req, res) => {
     } catch (e) {
       console.warn("DB homepage query fallback:", e)
     }
-  }
 
     // Emergency fallbacks only if DB connection is completely down
     if (services.length === 0) services = getInMemoryServices().map((s: any) => ({ ...s, images: s.images || (s.image ? [s.image] : []) }))

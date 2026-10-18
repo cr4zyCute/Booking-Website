@@ -1,5 +1,5 @@
-import { prisma, isDbConnected } from "./prisma"
-import { getDefaultTerminology } from "../config/terminology"
+import { prisma } from "@/lib/db/prisma"
+import { getDefaultTerminology } from "@/lib/config/terminology"
 import type { Business, BusinessSettings, BusinessTerminology, FeatureSettings, ThemeSettings } from "@prisma/client"
 
 export interface BusinessContext {
@@ -109,12 +109,6 @@ const CACHE_TTL = 60 * 1000 // 1 minute
 export async function getBusinessContext(): Promise<BusinessContext | null> {
   const now = Date.now()
   if (_cache && now - _cacheTime < CACHE_TTL) return _cache
-
-  if (!isDbConnected()) {
-    _cache = DEFAULT_FALLBACK_BUSINESS
-    _cacheTime = now
-    return _cache
-  }
 
   try {
     const business = await prisma.business.findFirst({
