@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react"
-import { Star, ShieldCheck, ChevronLeft, ChevronRight } from "lucide-react"
+import { Star, ShieldCheck } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
 
 interface ReviewItem {
   id: string
@@ -203,47 +202,20 @@ export function TestimonialsSection({ testimonials = [], reviews = [] }: Testimo
   return (
     <section id="testimonials" className="py-16 lg:py-24 scroll-mt-20 overflow-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Header with Title and Control Buttons */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8">
-          <div className="max-w-2xl">
-            <p className="text-sm font-medium text-[rgb(var(--primary))] mb-2 uppercase tracking-wider">
-              Patient Reviews
-            </p>
-            <h2
-              className="text-3xl sm:text-4xl font-bold text-[rgb(var(--foreground))]"
-              style={{ fontFamily: "var(--font-heading)" }}
-            >
-              Verified Patient Experiences
-            </h2>
-            <p className="text-sm text-[rgb(var(--muted-foreground))] mt-2">
-              Read real feedback from patients who booked and completed treatments at our clinic.
-            </p>
-          </div>
-
-          {/* Action Navigation Controls */}
-          <div className="flex items-center gap-3 shrink-0">
-            <span className="text-xs font-mono font-medium text-[rgb(var(--muted-foreground))] tracking-wider">
-              {String(activeBaseIndex + 1).padStart(2, "0")} / {String(totalBase).padStart(2, "0")}
-            </span>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handlePrev}
-              className="h-10 w-10 rounded-full border-[rgb(var(--border))] text-[rgb(var(--foreground))] hover:bg-[rgb(var(--muted))] cursor-pointer shadow-xs transition-colors"
-              aria-label="Previous patient experience"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleNext}
-              className="h-10 w-10 rounded-full border-[rgb(var(--border))] text-[rgb(var(--foreground))] hover:bg-[rgb(var(--muted))] cursor-pointer shadow-xs transition-colors"
-              aria-label="Next patient experience"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </Button>
-          </div>
+        {/* Section Header */}
+        <div className="max-w-2xl mb-8">
+          <p className="text-sm font-medium text-[rgb(var(--primary))] mb-2 uppercase tracking-wider">
+            Patient Reviews
+          </p>
+          <h2
+            className="text-3xl sm:text-4xl font-bold text-[rgb(var(--foreground))]"
+            style={{ fontFamily: "var(--font-heading)" }}
+          >
+            Verified Patient Experiences
+          </h2>
+          <p className="text-sm text-[rgb(var(--muted-foreground))] mt-2">
+            Read real feedback from patients who booked and completed treatments at our clinic.
+          </p>
         </div>
 
         {/* Carousel Viewport Container */}
