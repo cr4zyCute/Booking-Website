@@ -33,16 +33,16 @@ export function PublicLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[rgb(var(--background))] text-[rgb(var(--foreground))]">
-      <ClinicTopBar
-        businessName={business.name}
-        phone={business.phone}
-        address={business.address}
-      />
       <PublicNav
         businessName={business.name}
         logo={business.logo}
         navItems={navItems}
         bookingLabel={`Book ${appointmentLabel}`}
+      />
+      <ClinicTopBar
+        businessName={business.name}
+        phone={business.phone}
+        address={business.address}
       />
       <main className="flex-1 flex flex-col">
         <motion.div
