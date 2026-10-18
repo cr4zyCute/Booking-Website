@@ -29,6 +29,27 @@ interface ServicesSectionProps {
   content: Record<string, any> | null
 }
 
+const TREATMENT_FALLBACK_IMAGES: Record<string, string> = {
+  "dental-consultation": "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80",
+  "teeth-cleaning": "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=800&q=80",
+  "dental-filling": "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=800&q=80",
+  "teeth-whitening": "https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&w=800&q=80",
+  "orthodontic-consultation": "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80",
+  "orthodontic-assessment": "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80",
+  "dental-implant-consultation": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800&q=80",
+}
+
+export function getTreatmentFallbackImage(slug?: string, name?: string): string {
+  if (slug && TREATMENT_FALLBACK_IMAGES[slug]) return TREATMENT_FALLBACK_IMAGES[slug]
+  const n = (name || "").toLowerCase()
+  if (n.includes("clean") || n.includes("prophylaxis")) return TREATMENT_FALLBACK_IMAGES["teeth-cleaning"]
+  if (n.includes("whiten")) return TREATMENT_FALLBACK_IMAGES["teeth-whitening"]
+  if (n.includes("fill") || n.includes("restor")) return TREATMENT_FALLBACK_IMAGES["dental-filling"]
+  if (n.includes("ortho") || n.includes("brace") || n.includes("align")) return TREATMENT_FALLBACK_IMAGES["orthodontic-consultation"]
+  if (n.includes("implant") || n.includes("surger")) return TREATMENT_FALLBACK_IMAGES["dental-implant-consultation"]
+  return TREATMENT_FALLBACK_IMAGES["dental-consultation"]
+}
+
 export function TreatmentCard({
   service,
   currencySymbol,
@@ -47,7 +68,10 @@ export function TreatmentCard({
   const priceFormatted = formatCurrency(Number(service.price), currencySymbol)
   const durationFormatted = formatDuration(service.durationMinutes)
   const descriptionText = service.shortDescription || service.description || ""
-  const primaryImage = (service.images && service.images.length > 0) ? service.images[0] : (service.image || null)
+  const fallbackImg = getTreatmentFallbackImage(service.slug, service.name)
+  const primaryImage = (service.images && service.images.length > 0)
+    ? service.images[0]
+    : (service.image || fallbackImg)
 
   const handleClick = (e: React.MouseEvent) => {
     if (isPreview) {
@@ -71,7 +95,7 @@ export function TreatmentCard({
   // STYLE 3: ATMOSPHERIC GRADIENT BLUR REVEAL
   // =========================================================================
   if (style === "overlay" || style === "blurred-image-reveal" || style === "blurred_reveal") {
-    const cardImg = primaryImage || "/hero-dental.jpg"
+    const cardImg = primaryImage || fallbackImg
 
     return (
       <div
@@ -160,7 +184,7 @@ export function TreatmentCard({
   // STYLE 2: IMAGE TREATMENT CARD (Top Header / Split Image)
   // =========================================================================
   if (style === "image_card") {
-    const cardImg = primaryImage || "/hero-dental.jpg"
+    const cardImg = primaryImage || fallbackImg
 
     return (
       <div

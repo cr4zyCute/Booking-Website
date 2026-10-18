@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { formatCurrency, formatDuration } from "@/lib/utils"
+import { getTreatmentFallbackImage } from "@/components/sections/ServicesSection"
 
 export interface TreatmentModalData {
   id: string
@@ -68,7 +69,8 @@ export function TreatmentPreviewModal({
       return service.images.filter(Boolean)
     }
     if (service.image) return [service.image]
-    return []
+    const fallback = getTreatmentFallbackImage(service.slug, service.name)
+    return fallback ? [fallback] : []
   }, [service])
 
   // Reset index when service changes

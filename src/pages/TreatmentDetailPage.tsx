@@ -19,6 +19,7 @@ import {
 } from "lucide-react"
 
 import { DEFAULT_SERVICES } from "@/lib/defaultData"
+import { getTreatmentFallbackImage } from "@/components/sections/ServicesSection"
 
 export function TreatmentDetailPage() {
   const { slug } = useParams<{ slug: string }>()
@@ -83,7 +84,7 @@ export function TreatmentDetailPage() {
 
   const priceFormatted = formatCurrency(Number(service.price), business.currencySymbol)
   const durationFormatted = formatDuration(service.durationMinutes)
-  const imageUrl = service.image || "/hero-dental.jpg"
+  const imageUrl = service.image || getTreatmentFallbackImage(service.slug, service.name)
   const staffMembers = service.staffServices?.map((ss: any) => ss.staff).filter(Boolean) || []
 
   return (
