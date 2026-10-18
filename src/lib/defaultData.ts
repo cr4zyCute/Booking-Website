@@ -307,3 +307,4 @@ export const DEFAULT_FAQS = [
     answer: "Absolutely. You can modify or reschedule your appointment at any time up to 24 hours prior directly via your confirmation link or the Patient Portal without any cancellation fee.",
   },
 ]
+
