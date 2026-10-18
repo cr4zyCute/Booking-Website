@@ -1,6 +1,7 @@
 import { Router } from "express"
 import bcrypt from "bcryptjs"
-import { prisma } from "../../src/lib/db/prisma"
+import { prisma, isDbConnected } from "../../src/lib/db/prisma"
+
 import { generateToken, AuthRequest } from "../middleware/auth"
 import { getBusinessContext } from "../../src/lib/db/business"
 import { inMemoryUsers } from "../lib/store"
@@ -122,47 +123,49 @@ authRouter.post("/login", async (req, res) => {
     const { email, password } = parsed.data
     const normalizedEmail = email.toLowerCase().trim()
 
-    try {
-      const user = await prisma.user.findUnique({
-        where: { email: normalizedEmail },
-        include: { staff: true, customer: true },
-      })
+    if (isDbConnected()) {
+      try {
+        const user = await prisma.user.findUnique({
+          where: { email: normalizedEmail },
+          include: { staff: true, customer: true },
+        })
 
-      if (user && user.password) {
-        const passwordMatch = await bcrypt.compare(password, user.password)
-        if (passwordMatch) {
-          const token = generateToken({
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            role: user.role,
-            staffId: user.staff?.id,
-            customerId: user.customer?.id,
-          })
-
-          res.cookie("token", token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-          })
-
-          return res.json({
-            token,
-            user: {
+        if (user && user.password) {
+          const passwordMatch = await bcrypt.compare(password, user.password)
+          if (passwordMatch) {
+            const token = generateToken({
               id: user.id,
               email: user.email,
               name: user.name,
               role: user.role,
-              image: user.image,
               staffId: user.staff?.id,
               customerId: user.customer?.id,
-            },
-          })
+            })
+
+            res.cookie("token", token, {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === "production",
+              sameSite: "lax",
+              maxAge: 7 * 24 * 60 * 60 * 1000,
+            })
+
+            return res.json({
+              token,
+              user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                role: user.role,
+                image: user.image,
+                staffId: user.staff?.id,
+                customerId: user.customer?.id,
+              },
+            })
+          }
         }
+      } catch (e) {
+        console.warn("DB login query error, checking fallbacks:", e)
       }
-    } catch (e) {
-      console.warn("DB login query fallback:", e)
     }
 
     // Check In-Memory Users store
@@ -236,30 +239,32 @@ authRouter.get("/me", async (req: AuthRequest, res) => {
     return res.status(401).json({ user: null })
   }
 
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.user.id },
-      include: { staff: true, customer: true },
-    })
-
-    if (user) {
-      return res.json({
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          image: user.image,
-          staffId: user.staff?.id ?? req.user.staffId,
-          customerId: user.customer?.id ?? req.user.customerId,
-        },
+  if (isDbConnected() && !req.user.id.includes("demo")) {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.id },
+        include: { staff: true, customer: true },
       })
-    }
 
-    return res.json({ user: req.user })
-  } catch (err) {
-    return res.json({ user: req.user })
+      if (user) {
+        return res.json({
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            image: user.image,
+            staffId: user.staff?.id ?? req.user.staffId,
+            customerId: user.customer?.id ?? req.user.customerId,
+          },
+        })
+      }
+    } catch {
+      // Fall through to returning token user
+    }
   }
+
+  return res.json({ user: req.user })
 })
 
 // Logout

@@ -4,6 +4,16 @@ import { PrismaPg } from "@prisma/adapter-pg"
 
 let prismaInstance: PrismaClient | null = null
 
+export function isDbConnected(): boolean {
+  const url = process.env.DATABASE_URL
+  if (!url) return false
+  // In Vercel serverless environment, localhost/127.0.0.1 cannot be reached
+  if (process.env.VERCEL && (url.includes("localhost") || url.includes("127.0.0.1") || url.includes("placeholder"))) {
+    return false
+  }
+  return true
+}
+
 function getPrismaClient(): PrismaClient {
   if (prismaInstance) return prismaInstance
 
