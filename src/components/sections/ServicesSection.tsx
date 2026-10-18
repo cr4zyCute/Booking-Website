@@ -43,7 +43,7 @@ export function TreatmentCard({
   isPreview?: boolean
 }) {
   const [touchRevealed, setTouchRevealed] = useState(false)
-  const style = globalCardStyle || service.cardStyle || "default"
+  const style = globalCardStyle || service.cardStyle || "image_card"
   const priceFormatted = formatCurrency(Number(service.price), currencySymbol)
   const durationFormatted = formatDuration(service.durationMinutes)
   const descriptionText = service.shortDescription || service.description || ""
@@ -280,7 +280,7 @@ export function ServicesSection({ services, serviceLabel, currencySymbol, conten
               key={service.id}
               service={service}
               currencySymbol={currencySymbol}
-              globalCardStyle={content?.cardStyle || "default"}
+              globalCardStyle={content?.cardStyle || "image_card"}
               onClick={svc => setSelectedService(svc)}
             />
           ))}
