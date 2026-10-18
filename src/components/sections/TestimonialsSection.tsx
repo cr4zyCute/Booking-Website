@@ -63,15 +63,16 @@ export function TestimonialsSection({ testimonials = [], reviews = [] }: Testimo
 
   const total = combinedItems.length
 
-  // Scroll to a specific card index smoothly
+  // Scroll to a specific card index smoothly and center it in viewport
   const scrollToIndex = useCallback((index: number) => {
     if (!scrollContainerRef.current) return
     const container = scrollContainerRef.current
     const cards = container.children
     if (cards[index]) {
       const targetCard = cards[index] as HTMLElement
+      const targetLeft = targetCard.offsetLeft - (container.offsetWidth - targetCard.offsetWidth) / 2
       container.scrollTo({
-        left: targetCard.offsetLeft - container.offsetLeft,
+        left: Math.max(0, targetLeft),
         behavior: "smooth",
       })
     }
@@ -90,19 +91,19 @@ export function TestimonialsSection({ testimonials = [], reviews = [] }: Testimo
     scrollToIndex(prevIndex)
   }, [currentIndex, total, scrollToIndex])
 
-  // Track active index as the user scrolls or drags horizontally
+  // Track active index as the user scrolls or drags horizontally (relative to container center)
   const handleScroll = () => {
     if (!scrollContainerRef.current) return
     const container = scrollContainerRef.current
-    const scrollLeft = container.scrollLeft
+    const containerCenter = container.scrollLeft + container.offsetWidth / 2
     const cards = Array.from(container.children) as HTMLElement[]
     if (cards.length === 0) return
 
     let closestIndex = 0
     let minDistance = Infinity
     cards.forEach((card, idx) => {
-      const cardLeft = card.offsetLeft - container.offsetLeft
-      const distance = Math.abs(cardLeft - scrollLeft)
+      const cardCenter = card.offsetLeft + card.offsetWidth / 2
+      const distance = Math.abs(cardCenter - containerCenter)
       if (distance < minDistance) {
         minDistance = distance
         closestIndex = idx
@@ -202,11 +203,11 @@ export function TestimonialsSection({ testimonials = [], reviews = [] }: Testimo
           onMouseLeave={() => setIsHovered(false)}
           className="relative group/carousel"
         >
-          {/* Scrollable Single Straight Row Track */}
+          {/* Scrollable Single Straight Row Track with Center Stage Focus */}
           <div
             ref={scrollContainerRef}
             onScroll={handleScroll}
-            className="flex items-stretch gap-6 overflow-x-auto scrollbar-none snap-x snap-mandatory pb-4 pt-1 px-1 -mx-1"
+            className="flex items-center gap-6 overflow-x-auto scrollbar-none snap-x snap-mandatory py-6 px-[6vw] sm:px-[15vw] md:px-[20vw]"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {combinedItems.map((item, index) => {
@@ -218,24 +219,27 @@ export function TestimonialsSection({ testimonials = [], reviews = [] }: Testimo
                 .join("")
                 .slice(0, 2)
 
-              const isActive = index === currentIndex
+              const isFocused = index === currentIndex
 
               return (
                 <div
                   key={item.id}
-                  className={`snap-start shrink-0 w-[88vw] sm:w-[380px] md:w-[420px] lg:w-[440px] bg-[rgb(var(--card))] rounded-[var(--radius)] border p-6 flex flex-col justify-between shadow-xs transition-all duration-300 select-none ${
-                    isActive
-                      ? "border-[rgb(var(--primary))] ring-1 ring-[rgb(var(--primary)/0.25)] shadow-md"
-                      : "border-[rgb(var(--border))] hover:border-[rgb(var(--primary)/0.4)] hover:shadow-sm"
+                  onClick={() => scrollToIndex(index)}
+                  className={`snap-center shrink-0 w-[84vw] sm:w-[420px] md:w-[480px] lg:w-[520px] bg-[rgb(var(--card))] rounded-[var(--radius)] border p-6 sm:p-7 flex flex-col justify-between cursor-pointer select-none transition-all duration-500 ease-out ${
+                    isFocused
+                      ? "scale-105 sm:scale-110 z-20 border-[rgb(var(--primary))] ring-2 ring-[rgb(var(--primary)/0.3)] shadow-2xl opacity-100 bg-[rgb(var(--card))]"
+                      : "scale-95 sm:scale-95 z-10 border-[rgb(var(--border))] opacity-60 hover:opacity-85 hover:border-[rgb(var(--primary)/0.5)] shadow-sm bg-[rgb(var(--card)/0.8)]"
                   }`}
                 >
-                  <div className="space-y-3.5">
+                  <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <div className="flex gap-0.5">
+                      <div className="flex gap-1">
                         {Array.from({ length: 5 }).map((_, i) => (
                           <Star
                             key={i}
-                            className={`h-4 w-4 ${
+                            className={`transition-all duration-300 ${
+                              isFocused ? "h-4.5 w-4.5" : "h-3.5 w-3.5"
+                            } ${
                               i < item.rating ? "fill-amber-400 text-amber-400" : "text-[rgb(var(--border))]"
                             }`}
                           />
@@ -243,19 +247,25 @@ export function TestimonialsSection({ testimonials = [], reviews = [] }: Testimo
                       </div>
 
                       {item.isVerified && (
-                        <span className="text-[11px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-medium px-2 py-0.5 rounded-full flex items-center gap-1 border border-emerald-500/20">
-                          <ShieldCheck className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                        <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full flex items-center gap-1 border transition-colors ${
+                          isFocused
+                            ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                            : "bg-emerald-500/10 text-emerald-600/80 border-emerald-500/15"
+                        }`}>
+                          <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                           Verified Booking
                         </span>
                       )}
                     </div>
 
-                    <p className="text-sm text-[rgb(var(--foreground))] leading-relaxed italic line-clamp-4">
+                    <p className={`text-[rgb(var(--foreground))] leading-relaxed italic transition-all duration-300 line-clamp-4 ${
+                      isFocused ? "text-base sm:text-lg font-medium" : "text-xs sm:text-sm"
+                    }`}>
                       &ldquo;{reviewText}&rdquo;
                     </p>
 
                     {(item.service?.name || item.staff?.name) && (
-                      <div className="text-[11px] text-[rgb(var(--muted-foreground))] pt-2 border-t border-[rgb(var(--border))] flex items-center gap-1.5 flex-wrap">
+                      <div className="text-xs text-[rgb(var(--muted-foreground))] pt-2.5 border-t border-[rgb(var(--border))] flex items-center gap-2 flex-wrap">
                         {item.service?.name && (
                           <span>
                             Treatment:{" "}
@@ -273,15 +283,23 @@ export function TestimonialsSection({ testimonials = [], reviews = [] }: Testimo
                     )}
                   </div>
 
-                  <div className="flex items-center gap-3 pt-4 mt-4 border-t border-[rgb(var(--border))]">
-                    <Avatar className="h-10 w-10 border border-[rgb(var(--border))]">
+                  <div className="flex items-center gap-3.5 pt-4 mt-5 border-t border-[rgb(var(--border))]">
+                    <Avatar className={`border transition-all duration-300 ${
+                      isFocused
+                        ? "h-11 w-11 border-[rgb(var(--primary)/0.6)] ring-2 ring-[rgb(var(--primary)/0.2)]"
+                        : "h-9 w-9 border-[rgb(var(--border))]"
+                    }`}>
                       <AvatarImage src={item.image ?? undefined} alt={authorName} />
                       <AvatarFallback className="text-xs bg-[rgb(var(--primary)/0.1)] text-[rgb(var(--primary))] font-bold">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <div className="text-sm font-bold text-[rgb(var(--foreground))]">{authorName}</div>
+                      <div className={`font-bold text-[rgb(var(--foreground))] transition-all duration-300 ${
+                        isFocused ? "text-sm sm:text-base" : "text-xs sm:text-sm"
+                      }`}>
+                        {authorName}
+                      </div>
                       {item.role && <div className="text-xs text-[rgb(var(--muted-foreground))]">{item.role}</div>}
                     </div>
                   </div>
