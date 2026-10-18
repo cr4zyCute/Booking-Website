@@ -299,74 +299,79 @@ export function DentistsPage() {
 
   return (
     <div className="min-h-screen bg-[rgb(var(--background))] text-[rgb(var(--foreground))] pb-20">
-      {/* 1. Top Search Header Area */}
-      <section className="relative py-12 sm:py-16 lg:py-20 border-b border-[rgb(var(--border))] bg-gradient-to-b from-[rgb(var(--muted)/0.4)] to-transparent">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[rgb(var(--primary)/0.1)] text-[rgb(var(--primary))] text-xs font-bold uppercase tracking-wider">
-            <Stethoscope className="h-3.5 w-3.5" />
-            Dental Specialists Directory
-          </div>
+      {/* 1. Compact Directory Header & Filter Control Strip */}
+      <section className="relative py-6 sm:py-7 border-b border-[rgb(var(--border))] bg-[rgb(var(--card))]">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-4">
+          {/* Top Row: Title + Integrated Search Bar */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[rgb(var(--primary)/0.1)] text-[rgb(var(--primary))] text-[11px] font-bold uppercase tracking-wider mb-1.5">
+                <Stethoscope className="h-3 w-3" />
+                Specialist Directory
+              </div>
+              <h1
+                className="text-2xl sm:text-3xl font-bold tracking-tight text-[rgb(var(--foreground))]"
+                style={{ fontFamily: "var(--font-heading)" }}
+              >
+                Find the Right Dentist
+              </h1>
+              <p className="text-xs sm:text-sm text-[rgb(var(--muted-foreground))] mt-0.5">
+                Explore board-certified specialists available for direct online booking
+              </p>
+            </div>
 
-          <h1
-            className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-[rgb(var(--foreground))]"
-            style={{ fontFamily: "var(--font-heading)" }}
-          >
-            Find the Right Dentist
-          </h1>
-
-          <p className="max-w-xl mx-auto text-sm sm:text-base text-[rgb(var(--muted-foreground))] leading-relaxed">
-            Search our dental team by name, specialty, or treatment.
-          </p>
-
-          {/* Search Input Box */}
-          <div className="max-w-2xl mx-auto pt-3">
-            <div className="relative flex items-center shadow-md rounded-[var(--radius)] overflow-hidden border border-[rgb(var(--border))] focus-within:border-[rgb(var(--primary))] focus-within:ring-2 focus-within:ring-[rgb(var(--primary)/0.2)] bg-[rgb(var(--card))] transition-all">
-              <Search className="absolute left-4 h-5 w-5 text-[rgb(var(--muted-foreground))] pointer-events-none" />
-              <Input
-                type="text"
-                placeholder="Search dentists, specialties, or treatments..."
-                value={searchQuery}
-                onChange={e => updateFilter({ q: e.target.value })}
-                className="w-full pl-12 pr-10 h-13 text-sm sm:text-base bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-[rgb(var(--muted-foreground)/0.7)]"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => updateFilter({ q: null })}
-                  aria-label="Clear search query"
-                  className="absolute right-3.5 p-1 rounded-full text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--foreground))] hover:bg-[rgb(var(--muted))] transition-colors"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
+            {/* Compact Search Input Box */}
+            <div className="w-full md:w-80 lg:w-96 shrink-0">
+              <div className="relative flex items-center shadow-xs rounded-[var(--radius)] overflow-hidden border border-[rgb(var(--border))] focus-within:border-[rgb(var(--primary))] focus-within:ring-1 focus-within:ring-[rgb(var(--primary)/0.3)] bg-[rgb(var(--background))] transition-all">
+                <Search className="absolute left-3 h-4 w-4 text-[rgb(var(--muted-foreground))] pointer-events-none" />
+                <Input
+                  type="text"
+                  placeholder="Search dentist, specialty, treatment..."
+                  value={searchQuery}
+                  onChange={e => updateFilter({ q: e.target.value })}
+                  className="w-full pl-9 pr-9 h-10 text-xs sm:text-sm bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-[rgb(var(--muted-foreground)/0.7)]"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => updateFilter({ q: null })}
+                    aria-label="Clear search query"
+                    className="absolute right-2.5 p-1 rounded-full text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--foreground))] hover:bg-[rgb(var(--muted))] transition-colors"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Quick Visible Filters Chips */}
-          <div className="pt-2 flex items-center justify-center flex-wrap gap-2">
-            {quickSpecialties.map(spec => {
-              const isSelected = selectedSpecialty === spec
-              return (
-                <button
-                  key={spec}
-                  type="button"
-                  onClick={() => updateFilter({ specialty: spec })}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer select-none ${
-                    isSelected
-                      ? "bg-[rgb(var(--primary))] text-white shadow-sm ring-2 ring-[rgb(var(--primary)/0.3)]"
-                      : "bg-[rgb(var(--card))] text-[rgb(var(--foreground))] border border-[rgb(var(--border))] hover:border-[rgb(var(--primary)/0.5)] hover:bg-[rgb(var(--muted)/0.5)]"
-                  }`}
-                >
-                  {spec === "All" ? `All ${staffLabel}` : spec}
-                </button>
-              )
-            })}
+          {/* Bottom Row: Quick Specialty Filter Chips & More Filters Button */}
+          <div className="flex items-center justify-between gap-2 pt-2 border-t border-[rgb(var(--border)/0.6)] flex-wrap">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {quickSpecialties.map(spec => {
+                const isSelected = selectedSpecialty === spec
+                return (
+                  <button
+                    key={spec}
+                    type="button"
+                    onClick={() => updateFilter({ specialty: spec })}
+                    className={`h-8 px-3 rounded-full text-xs font-semibold transition-all cursor-pointer select-none ${
+                      isSelected
+                        ? "bg-[rgb(var(--primary))] text-white shadow-xs"
+                        : "bg-[rgb(var(--muted)/0.5)] text-[rgb(var(--foreground))] border border-[rgb(var(--border))] hover:border-[rgb(var(--primary)/0.5)] hover:bg-[rgb(var(--muted))]"
+                    }`}
+                  >
+                    {spec === "All" ? `All ${staffLabel}` : spec}
+                  </button>
+                )
+              })}
+            </div>
 
             {/* "More Filters" Trigger Button */}
             <button
               type="button"
               onClick={() => setIsMoreFiltersOpen(true)}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer select-none border ${
+              className={`h-8 inline-flex items-center gap-1.5 px-3 rounded-full text-xs font-semibold transition-all cursor-pointer select-none border shrink-0 ${
                 secondaryFilterCount > 0
                   ? "bg-[rgb(var(--primary)/0.1)] text-[rgb(var(--primary))] border-[rgb(var(--primary)/0.4)]"
                   : "bg-[rgb(var(--card))] text-[rgb(var(--foreground))] border-[rgb(var(--border))] hover:border-[rgb(var(--primary)/0.5)] hover:bg-[rgb(var(--muted)/0.5)]"
@@ -385,7 +390,7 @@ export function DentistsPage() {
       </section>
 
       {/* 2. Main Directory Content Area */}
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8 space-y-6">
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-5 space-y-5">
         {/* Active Filters Removable Chips Bar */}
         {hasActiveFilters && (
           <div className="flex items-center justify-between gap-3 p-3 bg-[rgb(var(--muted)/0.3)] rounded-[var(--radius)] border border-[rgb(var(--border))] flex-wrap text-xs">
