@@ -79,5 +79,15 @@ app.use("/doctor", doctorRouter)
 app.use("/api/customer", customerRouter)
 app.use("/customer", customerRouter)
 
+// Global error handling middleware for serverless robustness
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error("Unhandled API Error:", err)
+  res.status(500).json({
+    error: err?.message || "Internal Server Error",
+    path: req.path,
+  })
+})
+
 export { app }
 export default app
+
