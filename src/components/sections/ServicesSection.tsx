@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useRef } from "react"
 import { Link } from "react-router-dom"
 import { Clock, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -103,7 +103,7 @@ export function TreatmentCard({
         role="button"
         tabIndex={0}
         aria-label={`View details for ${service.name}`}
-        className="group relative rounded-[var(--radius)] overflow-hidden border border-[rgb(var(--border))] min-h-[320px] flex flex-col justify-end shadow-sm transition-all duration-500 hover:shadow-xl hover:border-[rgb(var(--primary)/0.6)] cursor-pointer select-none bg-slate-950"
+        className="group relative rounded-[var(--radius)] overflow-hidden border border-[rgb(var(--border))] min-h-[320px] h-full flex flex-col justify-end shadow-sm transition-all duration-500 hover:shadow-xl hover:border-[rgb(var(--primary)/0.6)] cursor-pointer select-none bg-slate-950"
       >
         {/* Dominant Clear Background Image */}
         <div
@@ -192,7 +192,7 @@ export function TreatmentCard({
         role="button"
         tabIndex={0}
         aria-label={`View details for ${service.name}`}
-        className="group bg-[rgb(var(--card))] rounded-[var(--radius)] border border-[rgb(var(--border))] overflow-hidden flex flex-col hover:border-[rgb(var(--primary)/0.5)] hover:shadow-md transition-all duration-200 cursor-pointer select-none"
+        className="group bg-[rgb(var(--card))] rounded-[var(--radius)] border border-[rgb(var(--border))] overflow-hidden flex flex-col h-full hover:border-[rgb(var(--primary)/0.5)] hover:shadow-md transition-all duration-200 cursor-pointer select-none"
       >
         <div className="aspect-[16/10] overflow-hidden bg-[rgb(var(--muted))] relative">
           <img
@@ -243,7 +243,7 @@ export function TreatmentCard({
       role="button"
       tabIndex={0}
       aria-label={`View details for ${service.name}`}
-      className="group bg-[rgb(var(--card))] rounded-[var(--radius)] border border-[rgb(var(--border))] p-6 flex flex-col justify-between hover:border-[rgb(var(--primary)/0.5)] hover:shadow-md transition-all duration-200 cursor-pointer select-none"
+      className="group bg-[rgb(var(--card))] rounded-[var(--radius)] border border-[rgb(var(--border))] p-6 flex flex-col justify-between h-full hover:border-[rgb(var(--primary)/0.5)] hover:shadow-md transition-all duration-200 cursor-pointer select-none"
     >
       <div className="space-y-2">
         <h3 className="font-bold text-base sm:text-lg text-[rgb(var(--foreground))] group-hover:text-[rgb(var(--primary))] transition-colors leading-snug">
@@ -280,16 +280,41 @@ export function ServicesSection({ services, serviceLabel, currencySymbol, conten
   const subheading = content?.subheading ?? `Professional treatments tailored to your dental health and confidence.`
 
   const [selectedService, setSelectedService] = useState<ServiceItem | null>(null)
+  const sliderRef = useRef<HTMLDivElement>(null)
+  const [activeMobileIndex, setActiveMobileIndex] = useState(0)
 
   // Homepage displays a maximum of 6 treatments
   const displayedServices = services.slice(0, 6)
+
+  const handleScroll = () => {
+    const el = sliderRef.current
+    if (!el) return
+    const card = el.firstElementChild as HTMLElement | null
+    const cardWidth = card ? card.offsetWidth + 16 : 280
+    const scrollPos = el.scrollLeft
+    const idx = Math.round(scrollPos / cardWidth)
+    setActiveMobileIndex(Math.min(Math.max(0, idx), displayedServices.length - 1))
+  }
+
+  const handleScrollToCard = (index: number) => {
+    const el = sliderRef.current
+    if (!el) return
+    const children = el.children
+    if (children[index]) {
+      ;(children[index] as HTMLElement).scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      })
+    }
+  }
 
   return (
     <section id="treatments" className="py-16 lg:py-24 scroll-mt-20 relative">
       <span id="services" className="scroll-mt-20 absolute -top-20 pointer-events-none" />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="max-w-2xl mb-12">
+        <div className="max-w-2xl mb-10 sm:mb-12">
           <p className="text-xs font-bold text-[rgb(var(--primary))] mb-2 uppercase tracking-wider">{serviceLabel}</p>
           <h2 className="text-3xl sm:text-4xl font-bold text-[rgb(var(--foreground))] mb-4" style={{ fontFamily: "var(--font-heading)" }}>
             {heading}
@@ -297,21 +322,49 @@ export function ServicesSection({ services, serviceLabel, currencySymbol, conten
           <p className="text-[rgb(var(--muted-foreground))] leading-relaxed">{subheading}</p>
         </div>
 
-        {/* Treatments Grid (Max 6 on homepage) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Treatments: Mobile Side-Slider with Edge Peek | Tablet & Desktop Responsive Multi-Column Grid */}
+        <div
+          ref={sliderRef}
+          onScroll={handleScroll}
+          className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none gap-4 pb-4 pt-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-6 sm:overflow-visible"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
           {displayedServices.map(service => (
-            <TreatmentCard
+            <div
               key={service.id}
-              service={service}
-              currencySymbol={currencySymbol}
-              globalCardStyle={content?.cardStyle || "image_card"}
-              onClick={svc => setSelectedService(svc)}
-            />
+              className="w-[82vw] max-w-[320px] shrink-0 snap-center sm:w-auto sm:max-w-none sm:shrink flex flex-col"
+            >
+              <TreatmentCard
+                service={service}
+                currencySymbol={currencySymbol}
+                globalCardStyle={content?.cardStyle || "image_card"}
+                onClick={svc => setSelectedService(svc)}
+              />
+            </div>
           ))}
         </div>
 
+        {/* Mobile Swipe Pagination Indicator Dots */}
+        {displayedServices.length > 1 && (
+          <div className="flex sm:hidden items-center justify-center gap-1.5 mt-3 mb-2">
+            {displayedServices.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => handleScrollToCard(i)}
+                aria-label={`Go to treatment ${i + 1}`}
+                className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                  i === activeMobileIndex
+                    ? "w-6 bg-[rgb(var(--primary))]"
+                    : "w-2 bg-[rgb(var(--border))] hover:bg-[rgb(var(--primary)/0.4)]"
+                }`}
+              />
+            ))}
+          </div>
+        )}
+
         {/* Exactly ONE "See More" Button for the entire Treatments Section */}
-        <div className="mt-12 text-center">
+        <div className="mt-10 sm:mt-12 text-center">
           <Link to="/treatments">
             <Button size="lg" className="gap-2 px-8 font-semibold shadow-md shadow-[rgb(var(--primary)/0.25)]">
               See More {serviceLabel}
