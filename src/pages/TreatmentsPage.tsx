@@ -19,16 +19,17 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { motion, AnimatePresence } from "framer-motion"
+import { DEFAULT_SERVICES, DEFAULT_CATEGORIES } from "@/lib/defaultData"
 
 const ITEMS_PER_PAGE = 12
 
 export function TreatmentsPage() {
   const { business, terminology } = useBusiness()
 
-  const [services, setServices] = useState<ServiceItem[]>([])
-  const [categories, setCategories] = useState<any[]>([])
-  const [globalCardStyle, setGlobalCardStyle] = useState<"default" | "image_card" | "overlay">("default")
-  const [loading, setLoading] = useState(true)
+  const [services, setServices] = useState<ServiceItem[]>(DEFAULT_SERVICES)
+  const [categories, setCategories] = useState<any[]>(DEFAULT_CATEGORIES)
+  const [globalCardStyle, setGlobalCardStyle] = useState<"default" | "image_card" | "overlay">("image_card")
+  const [loading, setLoading] = useState(false)
 
   // Filter States
   const [searchQuery, setSearchQuery] = useState("")
@@ -48,13 +49,16 @@ export function TreatmentsPage() {
 
   const loadTreatmentsData = () => {
     fetch("/api/public/services", { cache: "no-store" })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error("API not reachable")
+        return res.json()
+      })
       .then(data => {
-        if (data.services) setServices(data.services)
-        if (data.categories) setCategories(data.categories)
+        if (data.services && data.services.length > 0) setServices(data.services)
+        if (data.categories && data.categories.length > 0) setCategories(data.categories)
         if (data.cardStyle) setGlobalCardStyle(data.cardStyle)
       })
-      .catch(err => console.warn("Failed to load treatments:", err))
+      .catch(err => console.warn("Using default treatments data:", err.message))
       .finally(() => setLoading(false))
   }
 

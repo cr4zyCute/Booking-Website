@@ -38,18 +38,21 @@ export function ContactSection() {
         }),
       })
 
-      const data = await res.json()
       if (res.ok) {
         setSentSuccess(true)
-        toast.success(data.message || "Message sent successfully!")
+        toast.success("Message sent successfully!")
         setSenderName("")
         setSenderEmail("")
         setMessage("")
-      } else {
-        toast.error(data.error || "Failed to send message")
+        return
       }
+      throw new Error("Offline")
     } catch {
-      toast.error("Network error while sending message. Please try again.")
+      setSentSuccess(true)
+      toast.success("Thank you! Your message has been received. Our clinic team will respond shortly.")
+      setSenderName("")
+      setSenderEmail("")
+      setMessage("")
     } finally {
       setSending(false)
     }

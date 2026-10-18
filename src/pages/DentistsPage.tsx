@@ -25,13 +25,14 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { useBusiness } from "@/context/BusinessContext"
 import { DentistPreviewModal, DentistModalData } from "@/components/dentists/DentistPreviewModal"
+import { DEFAULT_STAFF } from "@/lib/defaultData"
 
 export function DentistsPage() {
   const { terminology } = useBusiness()
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const [dentists, setDentists] = useState<DentistModalData[]>([])
-  const [loading, setLoading] = useState(true)
+  const [dentists, setDentists] = useState<DentistModalData[]>(DEFAULT_STAFF)
+  const [loading, setLoading] = useState(false)
 
   // Drawer / Popover State for "More Filters"
   const [isMoreFiltersOpen, setIsMoreFiltersOpen] = useState(false)
@@ -54,15 +55,18 @@ export function DentistsPage() {
   // Fetch Dentists Data
   useEffect(() => {
     fetch("/api/public/dentists")
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error("API not reachable")
+        return res.json()
+      })
       .then(data => {
-        if (data.staff && Array.isArray(data.staff)) {
+        if (data.staff && Array.isArray(data.staff) && data.staff.length > 0) {
           setDentists(data.staff)
-        } else if (data.dentists && Array.isArray(data.dentists)) {
+        } else if (data.dentists && Array.isArray(data.dentists) && data.dentists.length > 0) {
           setDentists(data.dentists)
         }
       })
-      .catch(err => console.error("Error fetching dentists:", err))
+      .catch(err => console.warn("Using default dentists data:", err.message))
       .finally(() => setLoading(false))
   }, [])
 

@@ -84,7 +84,8 @@ const DEMO_BOOKING_STAFF: BookingStaff[] = [
   {
     id: "st1",
     name: "Dr. Maria Santos",
-    photo: null,
+    slug: "dr-maria-santos",
+    photo: "/uploads/dentists/dr-maria-santos.jpg",
     specialty: "General & Preventive Dentistry",
     role: "Lead Dentist",
     services: [
@@ -96,7 +97,8 @@ const DEMO_BOOKING_STAFF: BookingStaff[] = [
   {
     id: "st2",
     name: "Dr. Daniel Cruz",
-    photo: null,
+    slug: "dr-daniel-cruz",
+    photo: "/uploads/dentists/dr-daniel-cruz.jpg",
     specialty: "Orthodontics & Clear Aligners",
     role: "Orthodontist",
     services: [
@@ -107,12 +109,25 @@ const DEMO_BOOKING_STAFF: BookingStaff[] = [
   {
     id: "st3",
     name: "Dr. Sofia Reyes",
-    photo: null,
+    slug: "dr-sofia-reyes",
+    photo: "/uploads/dentists/dr-sofia-reyes.jpg",
     specialty: "Aesthetic Dentistry & Whitening",
     role: "Cosmetic Dentist",
     services: [
       { service: { id: "s1", name: "Dental Consultation" } },
       { service: { id: "s4", name: "In-Office Teeth Whitening" } },
+    ],
+  },
+  {
+    id: "st4",
+    name: "Dr. James Navarro",
+    slug: "dr-james-navarro",
+    photo: "/uploads/dentists/dr-james-navarro.jpg",
+    specialty: "Oral Surgery & Implants",
+    role: "Oral Surgeon",
+    services: [
+      { service: { id: "s1", name: "Dental Consultation" } },
+      { service: { id: "s6", name: "Dental Implant Consultation" } },
     ],
   },
 ]

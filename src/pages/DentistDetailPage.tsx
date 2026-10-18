@@ -23,14 +23,17 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useBusiness } from "@/context/BusinessContext"
 import { formatCurrency, formatDuration } from "@/lib/utils"
+import { DEFAULT_STAFF } from "@/lib/defaultData"
 
 export function DentistDetailPage() {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
   const { business, terminology } = useBusiness()
 
-  const [dentist, setDentist] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  const [dentist, setDentist] = useState<any>(() => {
+    return DEFAULT_STAFF.find(d => d.slug === slug || d.id === slug) || null
+  })
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const staffLabel = terminology?.staffLabel || "Dentists"
@@ -39,8 +42,6 @@ export function DentistDetailPage() {
 
   useEffect(() => {
     if (!slug) return
-    setLoading(true)
-    setError(null)
 
     fetch(`/api/public/dentists/${slug}`)
       .then(res => {
@@ -51,13 +52,15 @@ export function DentistDetailPage() {
         const doc = data.dentist || data.staff
         if (doc) {
           setDentist(doc)
-        } else {
-          setError("Dentist profile not found")
         }
       })
       .catch(err => {
-        console.error("Fetch dentist error:", err)
-        setError("Unable to load dentist profile")
+        const fallback = DEFAULT_STAFF.find(d => d.slug === slug || d.id === slug)
+        if (fallback) {
+          setDentist(fallback)
+        } else {
+          setError("Unable to load dentist profile")
+        }
       })
       .finally(() => setLoading(false))
   }, [slug])

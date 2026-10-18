@@ -18,19 +18,21 @@ import {
   Info
 } from "lucide-react"
 
+import { DEFAULT_SERVICES } from "@/lib/defaultData"
+
 export function TreatmentDetailPage() {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
   const { business, terminology } = useBusiness()
 
-  const [service, setService] = useState<any | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [service, setService] = useState<any | null>(() => {
+    return DEFAULT_SERVICES.find(s => s.slug === slug || s.id === slug) || null
+  })
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!slug) return
-    setLoading(true)
-    setError(null)
 
     fetch(`/api/public/services/${slug}`, { cache: "no-store" })
       .then(async res => {
@@ -38,13 +40,15 @@ export function TreatmentDetailPage() {
         const data = await res.json()
         if (data.service) {
           setService(data.service)
-        } else {
-          throw new Error("Treatment details unavailable")
         }
       })
       .catch(err => {
-        console.error("Failed to load treatment:", err)
-        setError("Treatment not found")
+        const fallback = DEFAULT_SERVICES.find(s => s.slug === slug || s.id === slug)
+        if (fallback) {
+          setService(fallback)
+        } else {
+          setError("Treatment not found")
+        }
       })
       .finally(() => setLoading(false))
   }, [slug])

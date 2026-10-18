@@ -10,28 +10,37 @@ import { TestimonialsSection } from "@/components/sections/TestimonialsSection"
 import { FAQSection } from "@/components/sections/FAQSection"
 import { ContactSection } from "@/components/sections/ContactSection"
 import { BookingCTASection } from "@/components/sections/BookingCTASection"
+import {
+  DEFAULT_SERVICES,
+  DEFAULT_STAFF,
+  DEFAULT_TESTIMONIALS,
+  DEFAULT_FAQS,
+} from "@/lib/defaultData"
 
 export function HomePage() {
   const { business, terminology } = useBusiness()
   const [sections, setSections] = useState<any[]>([])
-  const [services, setServices] = useState<any[]>([])
-  const [staff, setStaff] = useState<any[]>([])
-  const [testimonials, setTestimonials] = useState<any[]>([])
+  const [services, setServices] = useState<any[]>(DEFAULT_SERVICES)
+  const [staff, setStaff] = useState<any[]>(DEFAULT_STAFF)
+  const [testimonials, setTestimonials] = useState<any[]>(DEFAULT_TESTIMONIALS)
   const [reviews, setReviews] = useState<any[]>([])
-  const [faqs, setFaqs] = useState<any[]>([])
+  const [faqs, setFaqs] = useState<any[]>(DEFAULT_FAQS)
 
   const fetchHomepageData = () => {
     fetch("/api/public/home", { cache: "no-store" })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error("API offline or in static preview")
+        return res.json()
+      })
       .then(data => {
         if (data.sections && data.sections.length > 0) setSections(data.sections)
-        if (data.services) setServices(data.services)
+        if (data.services && data.services.length > 0) setServices(data.services)
         if (data.staff && data.staff.length > 0) setStaff(data.staff)
-        if (data.testimonials) setTestimonials(data.testimonials)
-        if (data.reviews) setReviews(data.reviews)
-        if (data.faqs) setFaqs(data.faqs)
+        if (data.testimonials && data.testimonials.length > 0) setTestimonials(data.testimonials)
+        if (data.reviews && data.reviews.length > 0) setReviews(data.reviews)
+        if (data.faqs && data.faqs.length > 0) setFaqs(data.faqs)
       })
-      .catch(err => console.warn("Error fetching homepage data:", err))
+      .catch(err => console.warn("Using default homepage data:", err.message))
   }
 
   useEffect(() => {
