@@ -2,21 +2,40 @@ import "dotenv/config"
 import { PrismaClient } from "@prisma/client"
 import { PrismaPg } from "@prisma/adapter-pg"
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined
+let prismaInstance: PrismaClient | null = null
+
+function getPrismaClient(): PrismaClient {
+  if (prismaInstance) return prismaInstance
+
+  const connectionString = process.env.DATABASE_URL
+  try {
+    const adapter = new PrismaPg({
+      connectionString: connectionString || "postgresql://postgres:password@localhost:5432/booking_platform",
+    })
+    prismaInstance = new PrismaClient({
+      adapter,
+      log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+    })
+  } catch (err) {
+    console.warn("PrismaPg adapter initialization deferred/failed:", err)
+    prismaInstance = new PrismaClient({
+      log: ["error"],
+    })
+  }
+
+  return prismaInstance
 }
 
-function createPrismaClient() {
-  const connectionString = process.env.DATABASE_URL || "postgresql://postgres:password@localhost:5432/booking_platform"
-  const adapter = new PrismaPg({ connectionString })
-  return new PrismaClient({
-    adapter,
-    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
-  })
-}
-
-export const prisma = globalForPrisma.prisma ?? createPrismaClient()
-
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma
+// Lazy proxy so Prisma engine only loads on first DB query, not on module import
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    const client = getPrismaClient()
+    const value = (client as any)[prop]
+    if (typeof value === "function") {
+      return value.bind(client)
+    }
+    return value
+  },
+})
 
 export default prisma

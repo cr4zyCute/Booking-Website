@@ -41,9 +41,13 @@ app.use((req, res, next) => {
   next()
 })
 
-// Static files (uploads, public assets)
-app.use("/uploads", express.static(path.join(__dirname, "../public/uploads")))
-app.use(express.static(path.join(__dirname, "../public")))
+// Static files (uploads, public assets) - Handled by Vercel CDN in production
+try {
+  app.use("/uploads", express.static(path.join(__dirname, "../public/uploads")))
+  app.use(express.static(path.join(__dirname, "../public")))
+} catch {
+  // Static paths bypassed in serverless environment
+}
 
 // Health check endpoint
 const healthHandler = (_req: express.Request, res: express.Response) => {
