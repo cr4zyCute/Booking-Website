@@ -171,10 +171,11 @@ publicRouter.get("/home", async (req, res) => {
           }
         })
         setAllInMemoryServices(services)
-      } catch (e) {
-        console.warn("DB homepage query fallback:", e)
       }
+    } catch (e) {
+      console.warn("DB homepage query fallback:", e)
     }
+  }
 
     // Emergency fallbacks only if DB connection is completely down
     if (services.length === 0) services = getInMemoryServices().map((s: any) => ({ ...s, images: s.images || (s.image ? [s.image] : []) }))
