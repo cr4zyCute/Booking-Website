@@ -1,18 +1,9 @@
 {
   "version": 2,
-  "functions": {
-    "api/**/*.ts": {
-      "includeFiles": "node_modules/.prisma/client/**"
-    }
-  },
   "rewrites": [
     {
-      "source": "/api/health",
-      "destination": "/api/health"
-    },
-    {
       "source": "/api/(.*)",
-      "destination": "/api/[...all]"
+      "destination": "/api"
     },
     {
       "source": "/(.*)",
