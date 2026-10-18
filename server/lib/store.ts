@@ -48,15 +48,15 @@ export const inMemoryUsers: Map<string, StoredUser> = new Map()
 
 export let inMemoryHeroSection: HeroContent = {
   imagePosition: "right",
-  heading: "Exceptional care.\nDesigned around you.",
-  subheading: "Professional services delivered by an experienced team in Veridian Dental Studio.",
+  heading: "A radiant smile.\nDesigned around you.",
+  subheading: "World-class dental aesthetics, digital smile design, and gentle personalized care in Veridian Dental Studio.",
   primaryCta: "Book Appointment",
   secondaryCta: "Explore Services",
-  image: "/hero-dental.jpg",
+  image: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=2400&q=85",
   showBadge: true,
   badgeText: "Now accepting new patient bookings",
-  stat1Value: "500+",
-  stat1Label: "Satisfied Patients",
+  stat1Value: "2,500+",
+  stat1Label: "Smiles Transformed",
   stat2Value: "12",
   stat2Label: "Certified Dental Specialists",
 }

@@ -95,22 +95,20 @@ export function HomePage() {
     switch (type) {
       case "HERO":
         return (
-          <React.Fragment key={section.id || "hero"}>
-            <HeroSection
-              content={content}
-              businessName={business.name}
-              appointmentLabel={terminology.appointmentSingular}
-            />
-            {/* Instant Appointment Finder Bar docked right beneath the Hero */}
-            <div className="relative z-20 -mt-10 sm:-mt-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-6">
+          <HeroSection
+            key={section.id || "hero"}
+            content={content}
+            businessName={business.name}
+            appointmentLabel={terminology.appointmentSingular}
+            bookingBar={
               <QuickBookingBar
                 services={services}
                 staff={staff}
                 serviceLabel={terminology.serviceSingular}
                 staffLabel={terminology.staffSingular}
               />
-            </div>
-          </React.Fragment>
+            }
+          />
         )
       case "TRUST_STATS":
         return (
