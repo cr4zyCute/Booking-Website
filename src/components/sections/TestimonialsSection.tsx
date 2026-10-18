@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react"
-import { Star, ShieldCheck, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react"
+import React, { useState, useEffect, useRef, useCallback } from "react"
+import { Star, ShieldCheck, ChevronLeft, ChevronRight } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 
@@ -24,11 +24,7 @@ interface TestimonialsSectionProps {
 
 export function TestimonialsSection({ testimonials = [], reviews = [] }: TestimonialsSectionProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const [isPaused, setIsPaused] = useState(false)
-  const [isHovered, setIsHovered] = useState(false)
-  const [activeIndex, setActiveIndex] = useState(0)
-  const animFrameId = useRef<number | null>(null)
-  const lastTimeRef = useRef<number | null>(null)
+  const trackRef = useRef<HTMLDivElement>(null)
 
   // Combine verified patient reviews and testimonials from PostgreSQL or default fallbacks
   const baseItems: ReviewItem[] = [
@@ -62,74 +58,147 @@ export function TestimonialsSection({ testimonials = [], reviews = [] }: Testimo
     return text.trim().length > 0
   })
 
-  // Duplicate the list 4 times for seamless, non-stop circular loop scrolling
-  const loopItems = React.useMemo(() => {
-    if (baseItems.length === 0) return []
-    return [...baseItems, ...baseItems, ...baseItems, ...baseItems]
-  }, [baseItems])
-
   const totalBase = baseItems.length
 
-  // Continuous buttery-smooth 60fps marquee animation loop with pause controls
+  // Build a 5-set virtual circular array for completely seamless infinite sliding in both directions
+  const loopItems = React.useMemo(() => {
+    if (totalBase === 0) return []
+    return [...baseItems, ...baseItems, ...baseItems, ...baseItems, ...baseItems]
+  }, [baseItems, totalBase])
+
+  // Center on middle set (set 2, indices [2*N ... 3*N - 1])
+  const [currentIndex, setCurrentIndex] = useState(() => (totalBase > 0 ? totalBase * 2 : 0))
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const [containerWidth, setContainerWidth] = useState(0)
+  const [cardWidth, setCardWidth] = useState(480)
+  const gap = 24 // 1.5rem (gap-6)
+
+  // Drag / touch state for smooth natural gestures
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragStartX, setDragStartX] = useState(0)
+  const [dragOffset, setDragOffset] = useState(0)
+
+  // Measure container and card dimensions dynamically
+  const updateMeasurements = useCallback(() => {
+    if (containerRef.current) {
+      setContainerWidth(containerRef.current.offsetWidth)
+    }
+    if (trackRef.current && trackRef.current.children.length > 0) {
+      const firstCard = trackRef.current.children[0] as HTMLElement
+      if (firstCard && firstCard.offsetWidth > 0) {
+        setCardWidth(firstCard.offsetWidth)
+      }
+    }
+  }, [])
+
   useEffect(() => {
-    const container = containerRef.current
-    if (!container || totalBase === 0) return
+    updateMeasurements()
+    window.addEventListener("resize", updateMeasurements)
+    return () => window.removeEventListener("resize", updateMeasurements)
+  }, [updateMeasurements])
 
-    const speed = 0.55 // pixels per frame (~33px/sec for relaxed reading)
+  // Slide to next item infinitely
+  const handleNext = () => {
+    if (totalBase <= 1) return
+    setIsTransitioning(true)
+    setCurrentIndex(prev => prev + 1)
+  }
 
-    const step = (timestamp: number) => {
-      if (!lastTimeRef.current) lastTimeRef.current = timestamp
-      const elapsed = timestamp - lastTimeRef.current
-      lastTimeRef.current = timestamp
+  // Slide to previous item infinitely
+  const handlePrev = () => {
+    if (totalBase <= 1) return
+    setIsTransitioning(true)
+    setCurrentIndex(prev => prev - 1)
+  }
 
-      if (!isPaused && !isHovered) {
-        container.scrollLeft += speed * (elapsed / 16.67)
+  // When transition completes, if outside the middle block [2*N, 3*N - 1], instantly snap without transition
+  const handleTransitionEnd = () => {
+    setIsTransitioning(false)
+    if (totalBase === 0) return
 
-        // When scrolled halfway through the multi-loop array, wrap back smoothly to maintain seamless infinite illusion
-        const halfWidth = container.scrollWidth / 2
-        if (container.scrollLeft >= halfWidth) {
-          container.scrollLeft -= halfWidth
-        }
-      }
-
-      // Calculate which card is closest to center of screen for dynamic magnification
-      const containerCenter = container.scrollLeft + container.offsetWidth / 2
-      const cards = Array.from(container.children) as HTMLElement[]
-      if (cards.length > 0) {
-        let closestIdx = 0
-        let minDiff = Infinity
-        cards.forEach((card, idx) => {
-          const cardCenter = card.offsetLeft + card.offsetWidth / 2
-          const diff = Math.abs(cardCenter - containerCenter)
-          if (diff < minDiff) {
-            minDiff = diff
-            closestIdx = idx % totalBase
-          }
-        })
-        setActiveIndex(closestIdx)
-      }
-
-      animFrameId.current = requestAnimationFrame(step)
+    if (currentIndex >= totalBase * 3) {
+      // Re-anchor to identical index in the middle block
+      const normalized = (currentIndex % totalBase) + totalBase * 2
+      setCurrentIndex(normalized)
+    } else if (currentIndex < totalBase * 2) {
+      // Re-anchor to identical index in the middle block
+      const offset = ((currentIndex % totalBase) + totalBase) % totalBase
+      const normalized = offset + totalBase * 2
+      setCurrentIndex(normalized)
     }
+  }
 
-    animFrameId.current = requestAnimationFrame(step)
+  // Touch and drag handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setIsDragging(true)
+    setDragStartX(e.touches[0].clientX)
+    setDragOffset(0)
+  }
 
-    return () => {
-      if (animFrameId.current) cancelAnimationFrame(animFrameId.current)
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return
+    const diff = e.touches[0].clientX - dragStartX
+    setDragOffset(diff)
+  }
+
+  const handleTouchEnd = () => {
+    if (!isDragging) return
+    setIsDragging(false)
+    if (dragOffset < -50) {
+      handleNext()
+    } else if (dragOffset > 50) {
+      handlePrev()
     }
-  }, [isPaused, isHovered, totalBase])
+    setDragOffset(0)
+  }
 
-  const handleScrollByCards = (direction: "left" | "right") => {
-    if (!containerRef.current) return
-    const container = containerRef.current
-    const shift = 440 // approx width of one card + gap
-    container.scrollBy({
-      left: direction === "left" ? -shift : shift,
-      behavior: "smooth",
-    })
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true)
+    setDragStartX(e.clientX)
+    setDragOffset(0)
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return
+    const diff = e.clientX - dragStartX
+    setDragOffset(diff)
+  }
+
+  const handleMouseUp = () => {
+    if (!isDragging) return
+    setIsDragging(false)
+    if (dragOffset < -50) {
+      handleNext()
+    } else if (dragOffset > 50) {
+      handlePrev()
+    }
+    setDragOffset(0)
+  }
+
+  const handleMouseLeave = () => {
+    if (isDragging) {
+      setIsDragging(false)
+      setDragOffset(0)
+    }
+  }
+
+  // Direct dot jump
+  const handleDotClick = (targetBaseIndex: number) => {
+    const currentBaseIndex = ((currentIndex % totalBase) + totalBase) % totalBase
+    const diff = targetBaseIndex - currentBaseIndex
+    setIsTransitioning(true)
+    setCurrentIndex(prev => prev + diff)
   }
 
   if (!baseItems.length) return null
+
+  // Active base item index (0 to totalBase - 1)
+  const activeBaseIndex = ((currentIndex % totalBase) + totalBase) % totalBase
+
+  // Exact pixel transform to center the active card
+  const stride = cardWidth + gap
+  const baseTranslateX = (containerWidth / 2) - (currentIndex * stride) - (cardWidth / 2)
+  const finalTranslateX = baseTranslateX + dragOffset
 
   return (
     <section id="testimonials" className="py-16 lg:py-24 scroll-mt-20 overflow-hidden">
@@ -151,64 +220,59 @@ export function TestimonialsSection({ testimonials = [], reviews = [] }: Testimo
             </p>
           </div>
 
-          {/* Action Toolbar */}
-          <div className="flex items-center gap-2.5 shrink-0">
+          {/* Action Navigation Controls */}
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="text-xs font-mono font-medium text-[rgb(var(--muted-foreground))] tracking-wider">
+              {String(activeBaseIndex + 1).padStart(2, "0")} / {String(totalBase).padStart(2, "0")}
+            </span>
             <Button
               variant="outline"
               size="icon"
-              onClick={() => handleScrollByCards("left")}
-              className="h-9 w-9 rounded-full border-[rgb(var(--border))] text-[rgb(var(--foreground))] hover:bg-[rgb(var(--muted))] cursor-pointer shadow-xs transition-colors"
-              aria-label="Previous testimonial"
+              onClick={handlePrev}
+              className="h-10 w-10 rounded-full border-[rgb(var(--border))] text-[rgb(var(--foreground))] hover:bg-[rgb(var(--muted))] cursor-pointer shadow-xs transition-colors"
+              aria-label="Previous patient experience"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-5 w-5" />
             </Button>
-
-            <button
-              type="button"
-              onClick={() => setIsPaused(!isPaused)}
-              title={isPaused ? "Resume smooth animation loop" : "Pause animation"}
-              className="h-9 px-3.5 rounded-full border border-[rgb(var(--border))] bg-[rgb(var(--card))] text-[rgb(var(--foreground))] hover:bg-[rgb(var(--muted))] text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs transition-colors"
-            >
-              {isPaused ? (
-                <>
-                  <Play className="h-3.5 w-3.5 fill-current text-[rgb(var(--primary))]" />
-                  <span>Paused</span>
-                </>
-              ) : (
-                <>
-                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>Auto Loop</span>
-                </>
-              )}
-            </button>
-
             <Button
               variant="outline"
               size="icon"
-              onClick={() => handleScrollByCards("right")}
-              className="h-9 w-9 rounded-full border-[rgb(var(--border))] text-[rgb(var(--foreground))] hover:bg-[rgb(var(--muted))] cursor-pointer shadow-xs transition-colors"
-              aria-label="Next testimonial"
+              onClick={handleNext}
+              className="h-10 w-10 rounded-full border-[rgb(var(--border))] text-[rgb(var(--foreground))] hover:bg-[rgb(var(--muted))] cursor-pointer shadow-xs transition-colors"
+              aria-label="Next patient experience"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-5 w-5" />
             </Button>
           </div>
         </div>
 
-        {/* Smooth Infinite Looping Track Container */}
+        {/* Carousel Viewport Container */}
         <div
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          className="relative group/carousel py-4"
+          ref={containerRef}
+          className="relative py-8 overflow-hidden select-none cursor-grab active:cursor-grabbing"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
         >
           {/* Subtle Side Fade Overlays for Depth */}
-          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-12 sm:w-20 bg-gradient-to-r from-[rgb(var(--background))] to-transparent z-10" />
-          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 sm:w-20 bg-gradient-to-l from-[rgb(var(--background))] to-transparent z-10" />
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-24 bg-gradient-to-r from-[rgb(var(--background))] to-transparent z-30" />
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-24 bg-gradient-to-l from-[rgb(var(--background))] to-transparent z-30" />
 
-          {/* Continuous Scroll Container */}
+          {/* Smooth Sliding Track */}
           <div
-            ref={containerRef}
-            className="flex items-center gap-6 overflow-x-scroll scrollbar-none py-6 px-4"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            ref={trackRef}
+            onTransitionEnd={handleTransitionEnd}
+            className="flex items-center gap-6 will-change-transform"
+            style={{
+              transform: `translateX(${finalTranslateX}px)`,
+              transition: isTransitioning && !isDragging
+                ? "transform 500ms cubic-bezier(0.16, 1, 0.3, 1)"
+                : "none",
+            }}
           >
             {loopItems.map((item, index) => {
               const authorName = item.customerName || item.name || (item as any).authorName || "Verified Patient"
@@ -219,16 +283,21 @@ export function TestimonialsSection({ testimonials = [], reviews = [] }: Testimo
                 .join("")
                 .slice(0, 2)
 
-              const baseIdx = index % totalBase
-              const isCenterFocus = baseIdx === activeIndex
+              const isCenterFocus = index === currentIndex
 
               return (
                 <div
                   key={`${item.id}-loop-${index}`}
-                  className={`shrink-0 w-[84vw] sm:w-[420px] md:w-[480px] lg:w-[500px] bg-[rgb(var(--card))] rounded-[var(--radius)] border p-6 sm:p-7 flex flex-col justify-between select-none transition-all duration-500 ease-out ${
+                  onClick={() => {
+                    if (index !== currentIndex) {
+                      setIsTransitioning(true)
+                      setCurrentIndex(index)
+                    }
+                  }}
+                  className={`shrink-0 w-[84vw] sm:w-[420px] md:w-[480px] lg:w-[500px] bg-[rgb(var(--card))] rounded-[var(--radius)] border p-6 sm:p-7 flex flex-col justify-between transition-all duration-500 ease-out ${
                     isCenterFocus
-                      ? "scale-105 z-20 border-[rgb(var(--primary))] ring-2 ring-[rgb(var(--primary)/0.3)] shadow-2xl opacity-100 bg-[rgb(var(--card))]"
-                      : "scale-95 z-10 border-[rgb(var(--border))] opacity-70 hover:opacity-90 hover:border-[rgb(var(--primary)/0.4)] shadow-sm bg-[rgb(var(--card)/0.85)]"
+                      ? "scale-105 z-20 border-[rgb(var(--primary))] ring-2 ring-[rgb(var(--primary)/0.35)] shadow-2xl opacity-100"
+                      : "scale-95 z-10 border-[rgb(var(--border))] opacity-60 hover:opacity-85 shadow-sm hover:border-[rgb(var(--primary)/0.3)]"
                   }`}
                 >
                   <div className="space-y-4">
@@ -316,15 +385,18 @@ export function TestimonialsSection({ testimonials = [], reviews = [] }: Testimo
             })}
           </div>
 
-          {/* Real-time Indicator Dots */}
-          <div className="mt-4 flex items-center justify-center gap-1.5 flex-wrap">
+          {/* Interactive Pagination Indicators */}
+          <div className="mt-8 flex items-center justify-center gap-2 flex-wrap">
             {baseItems.map((_, idx) => (
-              <span
+              <button
                 key={idx}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  idx === activeIndex
-                    ? "w-7 bg-[rgb(var(--primary))]"
-                    : "w-2 bg-[rgb(var(--border))]"
+                type="button"
+                onClick={() => handleDotClick(idx)}
+                aria-label={`Go to testimonial ${idx + 1}`}
+                className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
+                  idx === activeBaseIndex
+                    ? "w-8 bg-[rgb(var(--primary))]"
+                    : "w-2.5 bg-[rgb(var(--border))] hover:bg-[rgb(var(--primary)/0.4)]"
                 }`}
               />
             ))}
