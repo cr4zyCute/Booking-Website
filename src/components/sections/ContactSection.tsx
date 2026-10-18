@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion"
 
 export function ContactSection() {
   const { business } = useBusiness()
-  const [activePanel, setActivePanel] = useState<"hours" | "map" | "email">("hours")
+  const [activePanel, setActivePanel] = useState<"map" | "email">("map")
 
   // Email form state
   const [senderName, setSenderName] = useState("")
@@ -88,49 +88,73 @@ export function ContactSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
-          {/* Left Column: Interactive Contact Information Cards */}
-          <div className="space-y-4">
-            {/* 1. Clinic Address Card (Clickable -> Opens Map) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
+          {/* Left Column (Side): Clinic Hours & Contact Details */}
+          <div className="lg:col-span-5 space-y-4">
+            {/* 1. Clinic Hours Card (Side Placement) */}
+            <div className="p-5 bg-[rgb(var(--card))] rounded-[var(--radius)] border border-[rgb(var(--border))] shadow-xs flex items-start gap-4">
+              <div className="h-10 w-10 shrink-0 rounded-[var(--radius)] bg-[rgb(var(--primary)/0.1)] flex items-center justify-center text-[rgb(var(--primary))]">
+                <Clock className="h-5 w-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-[rgb(var(--foreground))] mb-1.5 text-sm">Clinic Hours</h3>
+                <div className="space-y-1 text-xs text-[rgb(var(--muted-foreground))] leading-relaxed">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-[rgb(var(--foreground))]">Monday – Friday</span>
+                    <span>9:00 AM – 6:00 PM</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-[rgb(var(--foreground))]">Saturday</span>
+                    <span>9:00 AM – 4:00 PM</span>
+                  </div>
+                  <div className="flex items-center justify-between text-rose-500 dark:text-rose-400">
+                    <span className="font-medium">Sunday</span>
+                    <span>Closed (On-Call)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Clinic Address Card */}
             {business.address && (
               <div
-                onClick={() => setActivePanel(activePanel === "map" ? "hours" : "map")}
-                className={`group flex items-start gap-4 p-5 bg-[rgb(var(--card))] rounded-[var(--radius)] border cursor-pointer transition-all duration-200 shadow-sm ${
+                onClick={() => setActivePanel("map")}
+                className={`group flex items-start gap-4 p-5 bg-[rgb(var(--card))] rounded-[var(--radius)] border cursor-pointer transition-all duration-200 shadow-xs ${
                   activePanel === "map"
-                    ? "border-[rgb(var(--primary))] ring-2 ring-[rgb(var(--primary)/0.2)] bg-[rgb(var(--primary)/0.02)]"
-                    : "border-[rgb(var(--border))] hover:border-[rgb(var(--primary)/0.4)] hover:shadow-md"
+                    ? "border-[rgb(var(--primary))] ring-1 ring-[rgb(var(--primary)/0.3)] bg-[rgb(var(--primary)/0.02)]"
+                    : "border-[rgb(var(--border))] hover:border-[rgb(var(--primary)/0.4)] hover:shadow-sm"
                 }`}
                 role="button"
                 tabIndex={0}
-                aria-label="View clinic location map"
+                aria-label="View clinic location on map"
               >
-                <div className="h-10 w-10 shrink-0 rounded-[var(--radius)] bg-[rgb(var(--primary)/0.1)] flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <MapPin className="h-5 w-5 text-[rgb(var(--primary))]" />
+                <div className="h-10 w-10 shrink-0 rounded-[var(--radius)] bg-[rgb(var(--primary)/0.1)] flex items-center justify-center text-[rgb(var(--primary))]">
+                  <MapPin className="h-5 w-5" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-[rgb(var(--foreground))] mb-1">Clinic Address</h3>
+                    <h3 className="font-semibold text-[rgb(var(--foreground))] mb-1 text-sm">Clinic Address</h3>
                     <span className="text-xs font-medium text-[rgb(var(--primary))] flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
-                      {activePanel === "map" ? "Viewing Map" : "View Map"}
+                      {activePanel === "map" ? "Active Map" : "View Map"}
                       <ArrowRight className="h-3 w-3" />
                     </span>
                   </div>
-                  <p className="text-[rgb(var(--muted-foreground))] text-sm leading-relaxed">{business.address}</p>
+                  <p className="text-[rgb(var(--muted-foreground))] text-xs leading-relaxed">{business.address}</p>
                 </div>
               </div>
             )}
 
-            {/* 2. Phone Number Card */}
+            {/* 3. Phone Number Card */}
             {business.phone && (
-              <div className="flex items-start gap-4 p-5 bg-[rgb(var(--card))] rounded-[var(--radius)] border border-[rgb(var(--border))] shadow-sm">
-                <div className="h-10 w-10 shrink-0 rounded-[var(--radius)] bg-[rgb(var(--primary)/0.1)] flex items-center justify-center">
-                  <Phone className="h-5 w-5 text-[rgb(var(--primary))]" />
+              <div className="flex items-start gap-4 p-5 bg-[rgb(var(--card))] rounded-[var(--radius)] border border-[rgb(var(--border))] shadow-xs">
+                <div className="h-10 w-10 shrink-0 rounded-[var(--radius)] bg-[rgb(var(--primary)/0.1)] flex items-center justify-center text-[rgb(var(--primary))]">
+                  <Phone className="h-5 w-5" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-[rgb(var(--foreground))] mb-1">Phone Number</h3>
+                  <h3 className="font-semibold text-[rgb(var(--foreground))] mb-1 text-sm">Phone Number</h3>
                   <a
                     href={`tel:${business.phone}`}
-                    className="text-[rgb(var(--primary))] text-sm font-medium hover:underline inline-flex items-center gap-1.5"
+                    className="text-[rgb(var(--primary))] text-xs font-semibold hover:underline inline-flex items-center gap-1.5"
                   >
                     {business.phone}
                   </a>
@@ -138,119 +162,76 @@ export function ContactSection() {
               </div>
             )}
 
-            {/* 3. Email Address Card (Clickable -> Opens Email Form Panel) */}
+            {/* 4. Email Address Card (Toggles Email Form on the Right) */}
             {business.email && (
               <div
                 onClick={() => {
                   setSentSuccess(false)
-                  setActivePanel(activePanel === "email" ? "hours" : "email")
+                  setActivePanel(activePanel === "email" ? "map" : "email")
                 }}
-                className={`group flex items-start gap-4 p-5 bg-[rgb(var(--card))] rounded-[var(--radius)] border cursor-pointer transition-all duration-200 shadow-sm ${
+                className={`group flex items-start gap-4 p-5 bg-[rgb(var(--card))] rounded-[var(--radius)] border cursor-pointer transition-all duration-200 shadow-xs ${
                   activePanel === "email"
-                    ? "border-[rgb(var(--primary))] ring-2 ring-[rgb(var(--primary)/0.2)] bg-[rgb(var(--primary)/0.02)]"
-                    : "border-[rgb(var(--border))] hover:border-[rgb(var(--primary)/0.4)] hover:shadow-md"
+                    ? "border-[rgb(var(--primary))] ring-1 ring-[rgb(var(--primary)/0.3)] bg-[rgb(var(--primary)/0.02)]"
+                    : "border-[rgb(var(--border))] hover:border-[rgb(var(--primary)/0.4)] hover:shadow-sm"
                 }`}
                 role="button"
                 tabIndex={0}
-                aria-label="Send an email message"
+                aria-label="Send an inquiry message"
               >
-                <div className="h-10 w-10 shrink-0 rounded-[var(--radius)] bg-[rgb(var(--primary)/0.1)] flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <Mail className="h-5 w-5 text-[rgb(var(--primary))]" />
+                <div className="h-10 w-10 shrink-0 rounded-[var(--radius)] bg-[rgb(var(--primary)/0.1)] flex items-center justify-center text-[rgb(var(--primary))]">
+                  <Mail className="h-5 w-5" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-[rgb(var(--foreground))] mb-1">Email Address</h3>
+                    <h3 className="font-semibold text-[rgb(var(--foreground))] mb-1 text-sm">Email Inquiries</h3>
                     <span className="text-xs font-medium text-[rgb(var(--primary))] flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
-                      {activePanel === "email" ? "Writing Message" : "Send Email"}
+                      {activePanel === "email" ? "Writing Message" : "Send Message"}
                       <ArrowRight className="h-3 w-3" />
                     </span>
                   </div>
-                  <p className="text-[rgb(var(--primary))] text-sm font-medium">{business.email}</p>
+                  <p className="text-[rgb(var(--muted-foreground))] text-xs font-medium truncate">{business.email}</p>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Right Column: Animated Dynamic Panel (Clinic Hours / Map / Email Form) */}
-          <div className="bg-[rgb(var(--card))] rounded-[var(--radius)] border border-[rgb(var(--border))] overflow-hidden shadow-sm min-h-[380px] flex flex-col relative">
+          {/* Right Column (Main Panel): Map (Default) or Email Form */}
+          <div className="lg:col-span-7 bg-[rgb(var(--card))] rounded-[var(--radius)] border border-[rgb(var(--border))] overflow-hidden shadow-sm min-h-[460px] flex flex-col relative">
             <AnimatePresence mode="wait">
-              {/* VIEW 1: Clinic Hours */}
-              {activePanel === "hours" && (
-                <motion.div
-                  key="hours-panel"
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.25, ease: "easeInOut" }}
-                  className="p-8 flex flex-col items-center justify-center text-center flex-1 space-y-6 my-auto"
-                >
-                  <div className="h-16 w-16 rounded-full bg-[rgb(var(--primary)/0.1)] flex items-center justify-center text-[rgb(var(--primary))]">
-                    <Clock className="h-8 w-8" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-xl text-[rgb(var(--foreground))] mb-3">Clinic Hours</h3>
-                    <div className="space-y-1.5 text-sm text-[rgb(var(--muted-foreground))]">
-                      <p className="font-medium text-[rgb(var(--foreground))]">Monday – Friday: 9:00 AM – 6:00 PM</p>
-                      <p>Saturday: 9:00 AM – 4:00 PM</p>
-                      <p className="text-rose-500/80 dark:text-rose-400/80 font-medium">Sunday: Closed</p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setActivePanel("map")}
-                      className="gap-1.5 text-xs"
-                    >
-                      <MapPin className="h-3.5 w-3.5 text-[rgb(var(--primary))]" />
-                      View Location Map
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSentSuccess(false)
-                        setActivePanel("email")
-                      }}
-                      className="gap-1.5 text-xs"
-                    >
-                      <Mail className="h-3.5 w-3.5 text-[rgb(var(--primary))]" />
-                      Send Inquiries
-                    </Button>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* VIEW 2: Interactive Location Map */}
+              {/* DEFAULT VIEW: Interactive Google Map */}
               {activePanel === "map" && (
                 <motion.div
                   key="map-panel"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                  className="flex flex-col h-full flex-1"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.25, ease: "easeInOut" }}
+                  className="flex flex-col h-full flex-1 min-h-[460px]"
                 >
                   {/* Map Header */}
                   <div className="p-4 border-b border-[rgb(var(--border))] flex items-center justify-between bg-[rgb(var(--muted)/0.3)]">
                     <div className="flex items-center gap-2">
                       <MapPin className="h-4 w-4 text-[rgb(var(--primary))]" />
-                      <span className="font-semibold text-sm text-[rgb(var(--foreground))]">Clinic Location</span>
+                      <span className="font-semibold text-sm text-[rgb(var(--foreground))]">Studio Location Map</span>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setActivePanel("hours")}
-                      className="h-8 px-2 text-xs text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--foreground))]"
-                    >
-                      <X className="h-4 w-4 mr-1" />
-                      Close Map
-                    </Button>
+                    {business.email && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSentSuccess(false)
+                          setActivePanel("email")
+                        }}
+                        className="h-8 text-xs gap-1.5"
+                      >
+                        <Mail className="h-3.5 w-3.5 text-[rgb(var(--primary))]" />
+                        Send Message
+                      </Button>
+                    )}
                   </div>
 
                   {/* Embedded Google Map iframe */}
-                  <div className="flex-1 w-full min-h-[260px] bg-[rgb(var(--muted))] relative">
+                  <div className="flex-1 w-full min-h-[350px] bg-[rgb(var(--muted))] relative">
                     <iframe
                       title="Clinic Location Map"
                       src={mapEmbedUrl}
@@ -279,6 +260,8 @@ export function ContactSection() {
                 </motion.div>
               )}
 
+
+
               {/* VIEW 3: Smooth Slide-In Email Contact Form */}
               {activePanel === "email" && (
                 <motion.div
@@ -303,7 +286,7 @@ export function ContactSection() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setActivePanel("hours")}
+                      onClick={() => setActivePanel("map")}
                       className="h-8 px-2 text-xs text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--foreground))]"
                     >
                       <X className="h-4 w-4 mr-1" />
@@ -326,11 +309,11 @@ export function ContactSection() {
                         variant="outline"
                         onClick={() => {
                           setSentSuccess(false)
-                          setActivePanel("hours")
+                          setActivePanel("map")
                         }}
                         className="mt-2 text-xs"
                       >
-                        Back to Contact Information
+                        Return to Map
                       </Button>
                     </div>
                   ) : (
@@ -387,7 +370,7 @@ export function ContactSection() {
                           type="button"
                           variant="ghost"
                           size="sm"
-                          onClick={() => setActivePanel("hours")}
+                          onClick={() => setActivePanel("map")}
                           className="text-xs text-[rgb(var(--muted-foreground))]"
                         >
                           Cancel
