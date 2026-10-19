@@ -5,6 +5,27 @@ import { inMemoryHeroSection, inMemoryServices, getInMemoryServices, setAllInMem
 
 export const publicRouter = Router()
 
+const TREATMENT_FALLBACK_IMAGES: Record<string, string> = {
+  "dental-consultation": "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80",
+  "teeth-cleaning": "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=800&q=80",
+  "dental-filling": "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=800&q=80",
+  "teeth-whitening": "https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&w=800&q=80",
+  "orthodontic-consultation": "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80",
+  "orthodontic-assessment": "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80",
+  "dental-implant-consultation": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800&q=80",
+}
+
+function resolveServiceImage(slug?: string, name?: string): string {
+  if (slug && TREATMENT_FALLBACK_IMAGES[slug]) return TREATMENT_FALLBACK_IMAGES[slug]
+  const n = (name || "").toLowerCase()
+  if (n.includes("clean") || n.includes("prophylaxis")) return TREATMENT_FALLBACK_IMAGES["teeth-cleaning"]
+  if (n.includes("whiten")) return TREATMENT_FALLBACK_IMAGES["teeth-whitening"]
+  if (n.includes("fill") || n.includes("restor")) return TREATMENT_FALLBACK_IMAGES["dental-filling"]
+  if (n.includes("ortho") || n.includes("brace") || n.includes("align")) return TREATMENT_FALLBACK_IMAGES["orthodontic-consultation"]
+  if (n.includes("implant") || n.includes("surger")) return TREATMENT_FALLBACK_IMAGES["dental-implant-consultation"]
+  return TREATMENT_FALLBACK_IMAGES["dental-consultation"]
+}
+
 const FALLBACK_SERVICES = [
   {
     id: "s1",
@@ -14,6 +35,9 @@ const FALLBACK_SERVICES = [
     description: "A thorough examination with digital X-rays and full oral assessment.",
     price: 800,
     durationMinutes: 30,
+    image: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80",
+    images: ["https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80"],
+    cardStyle: "image_card",
     isFeatured: true,
     isActive: true,
   },
@@ -25,6 +49,9 @@ const FALLBACK_SERVICES = [
     description: "Gentle and thorough deep cleaning with fluoride protection.",
     price: 1500,
     durationMinutes: 45,
+    image: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=800&q=80",
+    images: ["https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=800&q=80"],
+    cardStyle: "image_card",
     isFeatured: true,
     isActive: true,
   },
@@ -36,6 +63,9 @@ const FALLBACK_SERVICES = [
     description: "Advanced cosmetic whitening treatment with instant results.",
     price: 5000,
     durationMinutes: 60,
+    image: "https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&w=800&q=80",
+    images: ["https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&w=800&q=80"],
+    cardStyle: "image_card",
     isFeatured: true,
     isActive: true,
   },
@@ -47,6 +77,9 @@ const FALLBACK_SERVICES = [
     description: "Specialized orthodontic evaluation for smile alignment.",
     price: 1000,
     durationMinutes: 30,
+    image: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80",
+    images: ["https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80"],
+    cardStyle: "image_card",
     isFeatured: true,
     isActive: true,
   },
@@ -216,7 +249,7 @@ publicRouter.get("/services", async (req, res) => {
 
     let services: any[] = []
     let categories: any[] = []
-    let globalCardStyle = "default"
+    let globalCardStyle = "image_card"
 
     try {
       const [dbServices, dbCategories, servicesSection] = await Promise.all([
@@ -235,12 +268,18 @@ publicRouter.get("/services", async (req, res) => {
       ])
 
       if (servicesSection?.content && (servicesSection.content as any).cardStyle) {
-        globalCardStyle = (servicesSection.content as any).cardStyle
+        const cs = (servicesSection.content as any).cardStyle
+        globalCardStyle = cs === "default" ? "image_card" : cs
       }
 
       if (dbServices && dbServices.length > 0) {
         services = dbServices.map((s: any) => {
-          const sImages = s.images && Array.isArray(s.images) && s.images.length > 0 ? s.images : s.image ? [s.image] : []
+          const fallbackImg = resolveServiceImage(s.slug, s.name)
+          const sImages = s.images && Array.isArray(s.images) && s.images.length > 0
+            ? s.images
+            : (s.image ? [s.image] : [fallbackImg])
+          const resolvedImg = sImages[0] || s.image || fallbackImg
+
           return {
             id: s.id,
             name: s.name,
@@ -249,7 +288,7 @@ publicRouter.get("/services", async (req, res) => {
             description: s.description || s.shortDescription,
             price: Number(s.price),
             durationMinutes: s.durationMinutes,
-            image: sImages[0] || s.image || null,
+            image: resolvedImg,
             images: sImages,
             cardStyle: globalCardStyle,
             sortOrder: s.sortOrder,
@@ -266,11 +305,15 @@ publicRouter.get("/services", async (req, res) => {
     }
 
     if (services.length === 0) {
-      services = getInMemoryServices().map((s: any) => ({
-        ...s,
-        images: s.images || (s.image ? [s.image] : []),
-        cardStyle: globalCardStyle,
-      }))
+      services = getInMemoryServices().map((s: any) => {
+        const fallbackImg = resolveServiceImage(s.slug, s.name)
+        return {
+          ...s,
+          image: s.image || fallbackImg,
+          images: s.images && s.images.length > 0 ? s.images : [s.image || fallbackImg],
+          cardStyle: globalCardStyle,
+        }
+      })
     }
 
     return res.json({ services, categories, cardStyle: globalCardStyle })

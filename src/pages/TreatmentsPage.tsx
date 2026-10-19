@@ -56,7 +56,7 @@ export function TreatmentsPage() {
       .then(data => {
         if (data.services && data.services.length > 0) setServices(data.services)
         if (data.categories && data.categories.length > 0) setCategories(data.categories)
-        if (data.cardStyle) setGlobalCardStyle(data.cardStyle)
+        if (data.cardStyle) setGlobalCardStyle(data.cardStyle === "default" ? "image_card" : data.cardStyle)
       })
       .catch(err => console.warn("Using default treatments data:", err.message))
       .finally(() => setLoading(false))
