@@ -46,93 +46,90 @@ export function HeroSection({ content, businessName, appointmentLabel, bookingBa
         <img
           src={heroImage}
           alt="Modern dental care smiling patient"
-          className="w-full h-full object-cover object-[center_65%] sm:object-[center_62%] lg:object-[center_60%] transition-all duration-700"
+          className="w-full h-full object-cover object-[center_55%] sm:object-[center_52%] lg:object-[center_50%] transition-all duration-700"
         />
 
-        {/* 2. Cinematic Gradient Vignette Overlay (Dentix Style) */}
-        {/* Deep bottom vignette ensures bold white typography & buttons stand out with 100% contrast */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/55 via-slate-950/20 to-transparent" />
-        {/* Subtle top vignette for nav contrast */}
-        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-slate-950/50 to-transparent" />
-        {/* Subtle left vignette on desktop */}
-        <div className="absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-slate-950/40 to-transparent hidden lg:block" />
+        {/* 2. Cinematic Gradient Vignette Overlay (Protects top-left text legibility without blocking the person) */}
+        {/* Left vignette specifically framing the text area */}
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/40 via-transparent to-transparent hidden lg:block" />
+        {/* Top vignette for clean navigation contrast */}
+        <div className="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-slate-950/65 via-slate-950/25 to-transparent" />
+        {/* Bottom vignette for docked booking bar contrast */}
+        <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent" />
+        {/* Mobile/Tablet full gentle wash to keep text readable */}
+        <div className="absolute inset-0 bg-slate-950/40 lg:hidden" />
 
         {/* Top hairline border */}
         <div className="absolute top-0 inset-x-0 h-px bg-white/10" />
       </div>
 
-      {/* 3. Main Hero Content Container (Dentix Bottom Split Layout - Elevated Upward) */}
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full flex-1 flex flex-col justify-end pb-16 sm:pb-20 lg:pb-28 pt-20 sm:pt-28">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-end w-full mb-2 sm:mb-4 lg:mb-6">
-          {/* Left Column: Social Proof Chip & Iconic Dentix Headline */}
-          <div className="lg:col-span-7 space-y-4 text-left">
-            {/* Social Proof Pill: Overlapping Patient Avatars + 15k+ Satisfied Clients */}
-            <div className="inline-flex items-center gap-3 px-3.5 py-1.5 rounded-full bg-slate-900/60 backdrop-blur-md border border-white/20 shadow-lg">
-              <div className="flex -space-x-2 overflow-hidden">
-                <img
-                  className="inline-block h-6 w-6 rounded-full ring-2 ring-white/60 object-cover"
-                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80"
-                  alt="Patient"
-                />
-                <img
-                  className="inline-block h-6 w-6 rounded-full ring-2 ring-white/60 object-cover"
-                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80"
-                  alt="Patient"
-                />
-                <img
-                  className="inline-block h-6 w-6 rounded-full ring-2 ring-white/60 object-cover"
-                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80"
-                  alt="Patient"
-                />
-              </div>
-              <div className="text-xs font-semibold text-white/90 tracking-wide flex items-center gap-1.5">
-                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                <span>
-                  <strong className="text-white font-bold">{stat1Value}</strong> {stat1Label}
-                </span>
-              </div>
+      {/* 3. Main Hero Content Container (Positioned in Top-Left Negative Space - Completely Unblocking the Person) */}
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full flex-1 flex flex-col justify-start pt-10 sm:pt-14 lg:pt-16 pb-6">
+        <div className="max-w-xl lg:max-w-2xl space-y-4 text-left">
+          {/* Social Proof Pill: Overlapping Patient Avatars + 15k+ Satisfied Clients */}
+          <div className="inline-flex items-center gap-3 px-3.5 py-1.5 rounded-full bg-slate-900/60 backdrop-blur-md border border-white/20 shadow-lg">
+            <div className="flex -space-x-2 overflow-hidden">
+              <img
+                className="inline-block h-6 w-6 rounded-full ring-2 ring-white/60 object-cover"
+                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80"
+                alt="Patient"
+              />
+              <img
+                className="inline-block h-6 w-6 rounded-full ring-2 ring-white/60 object-cover"
+                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80"
+                alt="Patient"
+              />
+              <img
+                className="inline-block h-6 w-6 rounded-full ring-2 ring-white/60 object-cover"
+                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80"
+                alt="Patient"
+              />
             </div>
-
-            {/* Dentix Signature Headline: Bold Sans + Elegant Italic Serif */}
-            <h1
-              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.08] text-white drop-shadow-md"
-              style={{ fontFamily: "var(--font-heading)" }}
-            >
-              {headingTop}
-              <span className="block font-serif italic font-normal text-white/95 mt-1 sm:mt-1.5">
-                {headingBottom}
+            <div className="text-xs font-semibold text-white/90 tracking-wide flex items-center gap-1.5">
+              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+              <span>
+                <strong className="text-white font-bold">{stat1Value}</strong> {stat1Label}
               </span>
-            </h1>
+            </div>
           </div>
 
-          {/* Right Column: Narrative Subtitle & Dual High-Contrast Pill Buttons */}
-          <div className="lg:col-span-5 space-y-5 text-left lg:text-left flex flex-col justify-end">
-            <p className="text-sm sm:text-base text-white/85 leading-relaxed font-normal max-w-lg drop-shadow-xs">
-              {subheading}
-            </p>
+          {/* Dentix Signature Headline: Bold Sans + Elegant Italic Serif */}
+          <h1
+            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.08] text-white drop-shadow-md"
+            style={{ fontFamily: "var(--font-heading)" }}
+          >
+            {headingTop}
+            <span className="block font-serif italic font-normal text-white/95 mt-1 sm:mt-1.5">
+              {headingBottom}
+            </span>
+          </h1>
 
-            {/* Action Pill Buttons (Dentix Style) */}
-            <div className="flex flex-wrap sm:flex-nowrap gap-3.5 pt-1">
-              <Link to="/booking" className="w-full sm:w-auto">
-                <Button
-                  size="lg"
-                  className="w-full sm:w-auto h-12 px-7 rounded-full font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/35 border-0 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-                >
-                  <CalendarDays className="h-4.5 w-4.5 mr-2" />
-                  {primaryCta}
-                </Button>
-              </Link>
-              <Link to="/#treatments" className="w-full sm:w-auto">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full sm:w-auto h-12 px-7 rounded-full font-semibold bg-white/90 hover:bg-white text-slate-900 border-0 backdrop-blur-md shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-                >
-                  {secondaryCta}
-                  <ArrowRight className="h-4 w-4 ml-1.5" />
-                </Button>
-              </Link>
-            </div>
+          {/* Narrative Subtitle */}
+          <p className="text-sm sm:text-base text-white/85 leading-relaxed font-normal max-w-lg drop-shadow-xs pt-1">
+            {subheading}
+          </p>
+
+          {/* Action Pill Buttons */}
+          <div className="flex flex-wrap sm:flex-nowrap gap-3.5 pt-2">
+            <Link to="/booking" className="w-full sm:w-auto">
+              <Button
+                size="lg"
+                className="w-full sm:w-auto h-12 px-7 rounded-full font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/35 border-0 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+              >
+                <CalendarDays className="h-4.5 w-4.5 mr-2" />
+                {primaryCta}
+              </Button>
+            </Link>
+            <Link to="/#treatments" className="w-full sm:w-auto">
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full sm:w-auto h-12 px-7 rounded-full font-semibold bg-white/90 hover:bg-white text-slate-900 border-0 backdrop-blur-md shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+              >
+                {secondaryCta}
+                <ArrowRight className="h-4 w-4 ml-1.5" />
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
